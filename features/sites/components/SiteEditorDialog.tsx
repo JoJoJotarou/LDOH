@@ -262,7 +262,7 @@ export function SiteEditorDialog({
             aria-hidden="true"
           />
           <motion.div
-            className="relative flex min-h-[600px] w-full max-w-4xl flex-col rounded-xl border border-brand-border bg-white shadow-2xl"
+            className="relative flex w-full max-w-4xl max-h-[90vh] flex-col rounded-xl border border-brand-border bg-white shadow-2xl"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -456,7 +456,7 @@ export function SiteEditorDialog({
                       <p className="text-[10px] text-brand-muted mb-2 font-medium">
                         推荐标签 (点击添加):
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto custom-scrollbar">
                         {tagOptions
                           .filter((tag) => !selectedTags.has(tag))
                           .map((tag) => (
