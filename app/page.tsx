@@ -12,17 +12,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-async function getBaseUrl() {
-  const headerList = await headers();
-  const host = headerList.get("x-forwarded-host") || headerList.get("host");
-  if (!host) {
-    return "";
-  }
-  const protocol = headerList.get("x-forwarded-proto") || "http";
-  return `${protocol}://${host}`;
-}
-
 export default async function HomePage() {
+  const headerList = await headers();
   if (isAuthRequired()) {
     const secret = getSessionSecret();
     const cookieStore = await cookies();
@@ -35,9 +26,13 @@ export default async function HomePage() {
     }
   }
 
-  const baseUrl = await getBaseUrl();
+  const host = headerList.get("x-forwarded-host") || headerList.get("host");
+  const protocol = headerList.get("x-forwarded-proto") || "http";
+  const baseUrl = host ? `${protocol}://${host}` : "";
+  const cookieHeader = headerList.get("cookie") || "";
   const response = await fetch(`${baseUrl}/api/sites`, {
     cache: "no-store",
+    headers: cookieHeader ? { cookie: cookieHeader } : undefined,
   });
   const payload = response.ok ? await response.json() : null;
   const sitesResult = (payload?.sites ?? []) as Site[];
