@@ -80,6 +80,7 @@ function validateSites(data: unknown): data is Site[] {
 async function loadSitesFromSupabase(options?: {
   includeIds?: string[];
   includeHidden?: boolean;
+  maxRegistrationLimit?: number;
 }): Promise<Site[]> {
   let siteQuery = supabaseAdmin.from("site").select("*");
   if (options?.includeHidden) {
@@ -90,6 +91,12 @@ async function loadSitesFromSupabase(options?: {
     );
   } else {
     siteQuery = siteQuery.eq("is_visible", true);
+  }
+  if (
+    typeof options?.maxRegistrationLimit === "number" &&
+    Number.isFinite(options.maxRegistrationLimit)
+  ) {
+    siteQuery = siteQuery.lte("registration_limit", options.maxRegistrationLimit);
   }
 
   const sitesResponse = await siteQuery;
@@ -249,6 +256,7 @@ async function loadMaintainerSiteIds(username: string): Promise<string[]> {
 export async function loadSitesData(options?: {
   username?: string;
   includeHidden?: boolean;
+  maxRegistrationLimit?: number;
 }): Promise<Site[]> {
   ensureConfigured();
   const includeIds =
@@ -258,6 +266,7 @@ export async function loadSitesData(options?: {
   const sites = await loadSitesFromSupabase({
     includeIds,
     includeHidden: options?.includeHidden,
+    maxRegistrationLimit: options?.maxRegistrationLimit,
   });
   if (!validateSites(sites)) {
     throw new Error("Supabase returned invalid site data");

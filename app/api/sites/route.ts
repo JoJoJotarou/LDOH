@@ -165,7 +165,13 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     if (process.env.ENV === "dev") {
-      const sites = await loadSitesData({ includeHidden: true });
+      const devLevel = Number(process.env.LD_DEV_TRUST_LEVEL);
+      const trustLevel =
+        Number.isFinite(devLevel) && devLevel >= 0 ? devLevel : 2;
+      const sites = await loadSitesData({
+        includeHidden: true,
+        maxRegistrationLimit: trustLevel,
+      });
       const tags = buildTagOptionsFromSites(sites);
       return NextResponse.json({ sites, tags });
     }
@@ -176,7 +182,10 @@ export async function GET(request: NextRequest) {
     }
 
     const user = await fetchLdUser(token.accessToken);
-    const sites = await loadSitesData({ username: user.username });
+    const sites = await loadSitesData({
+      username: user.username,
+      maxRegistrationLimit: user.trust_level,
+    });
     const tags = buildTagOptionsFromSites(sites);
     return NextResponse.json({ sites, tags });
   } catch (error) {
