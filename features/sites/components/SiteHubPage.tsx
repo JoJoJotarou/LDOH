@@ -239,6 +239,7 @@ export function SiteHubPage({
           searchQuery={searchQuery}
           showHidden={showHidden}
           canCreate={canManageSites}
+          totalCount={filteredSites.length}
           onTagChange={setSelectedTag}
           onRegistrationLimitChange={setSelectedRegistrationLimit}
           onFeatureChange={setSelectedFeature}

@@ -5,6 +5,7 @@
 "use client";
 
 import { Tag } from "@/lib/contracts/types/tag";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +26,7 @@ interface FilterBarProps {
   searchQuery: string;
   showHidden: boolean;
   canCreate: boolean;
+  totalCount: number;
   onTagChange: (tagId: string) => void;
   onRegistrationLimitChange: (value: string) => void;
   onFeatureChange: (value: "all" | "ldc" | "translation" | "checkin") => void;
@@ -41,6 +43,7 @@ export function FilterBar({
   searchQuery,
   showHidden,
   canCreate,
+  totalCount,
   onTagChange,
   onRegistrationLimitChange,
   onFeatureChange,
@@ -56,15 +59,20 @@ export function FilterBar({
       transition={{ duration: 0.4, delay: 0.1 }}
     >
       {/* Search Input */}
-      <div className="relative max-w-md w-full">
+      <div className="relative w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search sites or API base URL..."
-          className="pl-10 border-brand-border focus:border-brand-blue focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="pl-10 pr-24 border-brand-border focus:border-brand-blue focus-visible:ring-0 focus-visible:ring-offset-0"
         />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+          <Badge variant="secondary" className="pointer-events-none h-6 px-2 text-xs font-normal text-brand-muted/80 bg-brand-bg/50 hover:bg-brand-bg/50">
+            共 {totalCount} 个
+          </Badge>
+        </div>
       </div>
 
       {/* Filters */}
