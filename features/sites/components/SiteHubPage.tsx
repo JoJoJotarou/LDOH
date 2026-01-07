@@ -264,7 +264,7 @@ export function SiteHubPage({
           >
             {filteredSites.map((site) => (
               <SiteCard
-                key={site.id}
+                key={`${site.id}-${viewMode}`}
                 site={site}
                 isFavorite={favorites.includes(site.id)}
                 isHidden={hidden.includes(site.id)}
