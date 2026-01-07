@@ -26,6 +26,7 @@ interface FilterBarProps {
   selectedRegistrationLimit: string;
   selectedFeature: "all" | "ldc" | "translation" | "checkin";
   searchQuery: string;
+  totalCount: number;
   showHidden: boolean;
   canCreate: boolean;
   viewMode: ViewMode;
@@ -44,6 +45,7 @@ export function FilterBar({
   selectedRegistrationLimit,
   selectedFeature,
   searchQuery,
+  totalCount,
   showHidden,
   canCreate,
   viewMode,

@@ -238,6 +238,7 @@ export function SiteHubPage({
           selectedRegistrationLimit={selectedRegistrationLimit}
           selectedFeature={selectedFeature}
           searchQuery={searchQuery}
+          totalCount={filteredSites.length}
           showHidden={showHidden}
           canCreate={canManageSites}
           viewMode={viewMode}
