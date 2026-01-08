@@ -8,7 +8,7 @@ import { userPreferenceService } from "@/features/sites/services/UserPreferenceS
 import { filterService } from "@/features/sites/services/FilterService";
 import { Background } from "@/components/common/Background";
 import { Navigation } from "@/components/common/Navigation";
-import { FilterBar } from "@/features/sites/components/FilterBar";
+import { FilterBar, ViewMode } from "@/features/sites/components/FilterBar";
 import { SiteCard } from "@/features/sites/components/SiteCard";
 import { SiteEditorDialog } from "@/features/sites/components/SiteEditorDialog";
 import { SiteLogDialog } from "@/features/sites/components/SiteLogDialog";
@@ -43,6 +43,7 @@ export function SiteHubPage({
     "all" | "ldc" | "translation" | "checkin"
   >("all");
   const [showHidden, setShowHidden] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<LdUser | null>(null);
@@ -249,31 +250,38 @@ export function SiteHubPage({
           selectedRegistrationLimit={selectedRegistrationLimit}
           selectedFeature={selectedFeature}
           searchQuery={searchQuery}
+          totalCount={filteredSites.length}
           showHidden={showHidden}
           canCreate={canManageSites}
-          totalCount={filteredSites.length}
+          viewMode={viewMode}
           onTagChange={setSelectedTag}
           onRegistrationLimitChange={setSelectedRegistrationLimit}
           onFeatureChange={setSelectedFeature}
           onSearchChange={setSearchQuery}
           onToggleShowHidden={() => setShowHidden(!showHidden)}
           onCreate={handleOpenCreate}
+          onViewModeChange={setViewMode}
         />
       </motion.header>
 
       <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
         <AnimatePresence mode="popLayout">
           <motion.div
-            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                : "flex flex-col gap-4"
+            }
             layout
           >
             {filteredSites.map((site) => (
               <SiteCard
-                key={site.id}
+                key={`${site.id}-${viewMode}`}
                 site={site}
                 isFavorite={favorites.includes(site.id)}
                 isHidden={hidden.includes(site.id)}
                 canEdit={canManageSites}
+                variant={viewMode}
                 onEdit={handleOpenEdit}
                 onViewLogs={handleViewLogs}
                 onToggleFavorite={handleToggleFavorite}

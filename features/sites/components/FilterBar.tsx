@@ -15,8 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Eye, EyeOff, Plus } from "lucide-react";
+import { Search, Eye, EyeOff, Plus, LayoutGrid, List } from "lucide-react";
 import { motion } from "framer-motion";
+
+export type ViewMode = "grid" | "list";
 
 interface FilterBarProps {
   tags: Tag[];
@@ -24,15 +26,17 @@ interface FilterBarProps {
   selectedRegistrationLimit: string;
   selectedFeature: "all" | "ldc" | "translation" | "checkin";
   searchQuery: string;
+  totalCount: number;
   showHidden: boolean;
   canCreate: boolean;
-  totalCount: number;
+  viewMode: ViewMode;
   onTagChange: (tagId: string) => void;
   onRegistrationLimitChange: (value: string) => void;
   onFeatureChange: (value: "all" | "ldc" | "translation" | "checkin") => void;
   onSearchChange: (query: string) => void;
   onToggleShowHidden: () => void;
   onCreate: () => void;
+  onViewModeChange: (mode: ViewMode) => void;
 }
 
 export function FilterBar({
@@ -41,15 +45,17 @@ export function FilterBar({
   selectedRegistrationLimit,
   selectedFeature,
   searchQuery,
+  totalCount,
   showHidden,
   canCreate,
-  totalCount,
+  viewMode,
   onTagChange,
   onRegistrationLimitChange,
   onFeatureChange,
   onSearchChange,
   onToggleShowHidden,
   onCreate,
+  onViewModeChange,
 }: FilterBarProps) {
   return (
     <motion.div
@@ -148,6 +154,21 @@ export function FilterBar({
               <Eye className="h-3.5 w-3.5" />
             ) : (
               <EyeOff className="h-3.5 w-3.5" />
+            )}
+          </Button>
+        </motion.div>
+        <motion.div whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewModeChange(viewMode === "grid" ? "list" : "grid")}
+            className="text-xs font-medium"
+            title={viewMode === "grid" ? "切换为列表视图" : "切换为卡片视图"}
+          >
+            {viewMode === "grid" ? (
+              <List className="h-3.5 w-3.5" />
+            ) : (
+              <LayoutGrid className="h-3.5 w-3.5" />
             )}
           </Button>
         </motion.div>

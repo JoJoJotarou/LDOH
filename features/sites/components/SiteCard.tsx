@@ -50,6 +50,7 @@ interface SiteCardProps {
   isFavorite: boolean;
   isHidden: boolean;
   canEdit: boolean;
+  variant?: "grid" | "list";
   onEdit: (site: Site) => void;
   onViewLogs: (site: Site) => void;
   onToggleFavorite: (id: string) => void;
@@ -61,6 +62,7 @@ export function SiteCard({
   isFavorite,
   isHidden,
   canEdit,
+  variant = "grid",
   onEdit,
   onViewLogs,
   onToggleFavorite,
@@ -215,6 +217,395 @@ export function SiteCard({
       {tagLabel}
     </Badge>
   ));
+
+  // 列表视图
+  if (variant === "list") {
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        transition={{ duration: 0.2 }}
+      >
+        <Card
+          className={`group relative overflow-hidden border border-brand-border bg-white transition-all duration-200 hover:border-brand-blue/30 hover:shadow-md ${
+            isHidden ? "opacity-60 grayscale" : ""
+          }`}
+        >
+          <div className="flex items-center gap-4 p-4">
+            {/* 站长头像 */}
+            <div className="relative h-10 w-10 shrink-0">
+              <motion.div
+                whileHover={{
+                  scale: 1.08,
+                  boxShadow: "0 0 20px rgba(255,177,3,0.45)",
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="rounded-full"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[radial-gradient(120%_120%_at_30%_20%,rgba(255,255,255,0.9)_0%,rgba(255,255,255,0.35)_35%,rgba(255,255,255,0)_60%),linear-gradient(135deg,rgba(255,240,200,0.9)_0%,rgba(255,210,120,0.55)_45%,rgba(255,240,210,0.9)_100%),conic-gradient(from_210deg_at_45%_45%,#FFE7A6_0deg,#FFF3D6_70deg,#FFD980_140deg,#FFF0C9_205deg,#FFE7A6_290deg,#FFD46B_360deg)] text-brand-text shadow-sm ring-1 ring-white/40">
+                  {hasMultipleMaintainers ? (
+                    <DropdownMenu
+                      open={maintainerMenuOpen}
+                      onOpenChange={setMaintainerMenuOpen}
+                    >
+                      <DropdownMenuTrigger asChild>
+                        <div
+                          className="flex h-full w-full items-center justify-center rounded-full shadow-sm outline-none focus-visible:ring-0"
+                          onMouseEnter={() => setMaintainerMenuOpen(true)}
+                          onMouseLeave={() => setMaintainerMenuOpen(false)}
+                          role="button"
+                          tabIndex={0}
+                          aria-label="维护者列表"
+                        >
+                          <span
+                            className={`max-w-[32px] truncate text-center font-semibold leading-none text-amber-900/80 ${maintainerTextClass}`}
+                          >
+                            {maintainerLabel}
+                          </span>
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="center"
+                        side="top"
+                        className="flex items-center justify-center gap-2 px-2 py-1.5"
+                        onMouseEnter={() => setMaintainerMenuOpen(true)}
+                        onMouseLeave={() => setMaintainerMenuOpen(false)}
+                      >
+                        {maintainerLinks.map((maintainer, index) => (
+                          <React.Fragment
+                            key={`${maintainer.name}-${maintainer.url}`}
+                          >
+                            {index > 0 && (
+                              <span className="h-3 w-px bg-brand-muted/40" />
+                            )}
+                            <DropdownMenuItem
+                              asChild
+                              className="px-0 py-0 focus:bg-transparent data-[highlighted]:bg-transparent"
+                            >
+                              <a
+                                href={maintainer.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-full px-1.5 py-0.5 text-xs font-medium text-brand-text transition-transform duration-150 hover:bg-brand-yellow/40 hover:scale-105"
+                              >
+                                {maintainer.name}
+                              </a>
+                            </DropdownMenuItem>
+                          </React.Fragment>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          {primaryMaintainerUrl ? (
+                            <a
+                              href={primaryMaintainerUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`Visit ${
+                                primaryMaintainer?.name ?? "maintainer"
+                              } profile`}
+                              className="flex h-full w-full items-center justify-center rounded-full shadow-sm outline-none focus-visible:ring-0"
+                            >
+                              <span
+                                className={`max-w-[32px] truncate text-center font-semibold leading-none text-amber-900/80 ${maintainerTextClass}`}
+                              >
+                                {maintainerLabel}
+                              </span>
+                            </a>
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center rounded-full shadow-sm">
+                              <span
+                                className={`max-w-[32px] truncate text-center font-semibold leading-none text-amber-900/80 ${maintainerTextClass}`}
+                              >
+                                {maintainerLabel}
+                              </span>
+                            </div>
+                          )}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {primaryMaintainer?.name || "站长"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+              </motion.div>
+              {hasMultipleMaintainers && (
+                <span className="pointer-events-none absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full border border-white/70 bg-amber-200 px-1 text-[8px] font-semibold text-amber-900 shadow-sm">
+                  {maintainerLinks.length}
+                </span>
+              )}
+            </div>
+
+            {/* 站点信息 */}
+            <div className="flex-1 min-w-0 flex items-center gap-2">
+              <h3 className="truncate text-sm font-semibold text-brand-text">
+                {site.apiBaseUrl ? (
+                  <a href={site.apiBaseUrl} target="_blank" rel="noopener noreferrer" className="hover:text-brand-blue">
+                    {site.name}
+                  </a>
+                ) : (
+                  site.name
+                )}
+              </h3>
+              
+              <div className="flex items-center gap-2 shrink-0">
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={`inline-flex items-center rounded-full border px-1.5 py-0 text-[9px] font-semibold ${registrationBadgeClass}`}>
+                        LV{site.registrationLimit}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>等级要求</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="secondary" className="px-1.5 py-0.5 text-[9px] font-semibold">
+                        {rateLimitLabel}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>速率限制</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              {tagLabels.length > 0 && (
+                <>
+                  <span className="h-3 w-px bg-slate-200 shrink-0" />
+                  <div className="hidden sm:flex items-center gap-1 overflow-hidden shrink-0">
+                    {tagLabels.slice(0, 5).map((label, index) => (
+                      <Badge
+                        key={`${label}-${index}`}
+                        variant="secondary"
+                        className="whitespace-nowrap px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground"
+                      >
+                        {label}
+                      </Badge>
+                    ))}
+                    {tagLabels.length > 5 && (
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="secondary"
+                              className="whitespace-nowrap px-1.5 py-0 text-[9px] font-medium text-muted-foreground"
+                            >
+                              +{tagLabels.length - 5}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {tagLabels.slice(5).join(" / ")}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* 特性图标 - 与卡片视图保持一致的 6 个按钮 */}
+            <TooltipProvider delayDuration={0}>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {/* 签到页 */}
+                {site.supportsCheckin && checkinHref ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a href={checkinHref} target="_blank" rel="noopener noreferrer">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-blue/30 bg-brand-blue/5 text-brand-blue">
+                          <CalendarCheck className="h-3.5 w-3.5" />
+                        </div>
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent>{site.checkinNote?.trim() || "签到页"}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-border bg-gray-50 text-brand-muted/50 opacity-60">
+                        <CalendarCheck className="h-3.5 w-3.5" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>签到页（暂无）</TooltipContent>
+                  </Tooltip>
+                )}
+                {/* 福利站 */}
+                {site.benefitUrl ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a href={site.benefitUrl} target="_blank" rel="noopener noreferrer">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-blue/30 bg-brand-blue/5 text-brand-blue">
+                          <Gift className="h-3.5 w-3.5" />
+                        </div>
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent>福利站</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-border bg-gray-50 text-brand-muted/50 opacity-60">
+                        <Gift className="h-3.5 w-3.5" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>福利站（暂无）</TooltipContent>
+                  </Tooltip>
+                )}
+                {/* 状态页 */}
+                {site.statusUrl ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a href={site.statusUrl} target="_blank" rel="noopener noreferrer">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-blue/30 bg-brand-blue/5 text-brand-blue">
+                          <Activity className="h-3.5 w-3.5" />
+                        </div>
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent>状态页</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-border bg-gray-50 text-brand-muted/50 opacity-60">
+                        <Activity className="h-3.5 w-3.5" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>状态页（暂无）</TooltipContent>
+                  </Tooltip>
+                )}
+                {/* 更多 */}
+                {hasMoreLinks ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button type="button" className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-blue/30 bg-brand-blue/5 text-brand-blue hover:bg-brand-blue/10 focus:outline-none">
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={6}>
+                      <DropdownMenuLabel>更多选项</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {extensionLinks.map((link) => (
+                        <DropdownMenuItem key={`${link.label}-${link.url}`} asChild>
+                          <a href={link.url} target="_blank" rel="noopener noreferrer" className="cursor-pointer">{link.label}</a>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-border bg-gray-50 text-brand-muted/50 opacity-60">
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>更多（暂无）</TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              {/* 沉浸式翻译 + LDC */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+                      supportsTranslation
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-rose-200 bg-rose-50 text-rose-700"
+                    }`}>
+                      <Languages className="h-3.5 w-3.5" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{supportsTranslation ? "支持沉浸式翻译" : "禁止沉浸式翻译"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+                      site.supportsLdc
+                        ? "border-amber-200 bg-amber-50 text-amber-700"
+                        : "border-gray-200 bg-gray-50 text-gray-400"
+                    }`}>
+                      <CreditCard className="h-3.5 w-3.5" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{site.supportsLdc ? "支持 LDC" : "不支持 LDC"}</TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+
+            {/* 操作按钮 */}
+            <div className="flex items-center gap-1 shrink-0">
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={handleCopyUrl}
+                      className="h-7 w-7 text-muted-foreground hover:text-brand-blue"
+                    >
+                      {copied ? <Check className="h-3.5 w-3.5 text-brand-green" /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>复制 API 地址</TooltipContent>
+                </Tooltip>
+
+                {canEdit && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onEdit(site)}
+                        className="h-7 w-7 text-muted-foreground hover:text-brand-text"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>编辑</TooltipContent>
+                  </Tooltip>
+                )}
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => onToggleFavorite(site.id)}
+                      className={`h-7 w-7 ${isFavorite ? "text-yellow-500 hover:text-yellow-600" : "text-muted-foreground"}`}
+                    >
+                      <Star className={`h-3.5 w-3.5 ${isFavorite ? "fill-current" : ""}`} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>收藏</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => onToggleHidden(site.id)}
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    >
+                      <EyeOff className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>隐藏</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  // 卡片视图（默认）
 
   return (
     <motion.div
