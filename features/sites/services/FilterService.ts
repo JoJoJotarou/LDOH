@@ -69,7 +69,8 @@ class FilterService implements IFilterService {
       filtered = filtered.filter(
         (site) =>
           site.name.toLowerCase().includes(keyword) ||
-          site.apiBaseUrl.toLowerCase().includes(keyword)
+          site.apiBaseUrl.toLowerCase().includes(keyword) ||
+          (site.description?.toLowerCase().includes(keyword) ?? false)
       );
     }
 
