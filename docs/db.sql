@@ -6,6 +6,10 @@ CREATE TABLE public.auth_sessions (
   token_type text NOT NULL DEFAULT 'bearer'::text,
   access_expires_at timestamp with time zone NOT NULL,
   session_expires_at timestamp with time zone NOT NULL,
+  user_id bigint,
+  user_username text,
+  user_trust_level integer,
+  user_fetched_at timestamp with time zone,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT auth_sessions_pkey PRIMARY KEY (id)
@@ -93,4 +97,3 @@ CREATE TABLE public.system_notifications (
   updated_by bigint,
   CONSTRAINT system_notifications_pkey PRIMARY KEY (id)
 );
-

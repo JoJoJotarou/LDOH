@@ -1,36 +1,7 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { SiteHubPage } from "@/features/sites/components/SiteHubPage";
-import { Site } from "@/lib/contracts/types/site";
-import { Tag } from "@/lib/contracts/types/tag";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const headerList = await headers();
-  const host = headerList.get("x-forwarded-host") || headerList.get("host");
-  const protocol = headerList.get("x-forwarded-proto") || "http";
-  const baseUrl = host ? `${protocol}://${host}` : "";
-  const cookieHeader = headerList.get("cookie") || "";
-  const response = await fetch(`${baseUrl}/api/sites`, {
-    cache: "no-store",
-    headers: cookieHeader ? { cookie: cookieHeader } : undefined,
-  });
-  const payload = response.ok ? await response.json() : null;
-  const sitesResult = (payload?.sites ?? []) as Site[];
-  const tagsResult = (payload?.tags ?? []) as Tag[];
-
-  const sites = sitesResult ?? [];
-
-  const dataWarning = response.ok
-    ? undefined
-    : payload?.error || "数据加载失败";
-
-  return (
-    <SiteHubPage
-      initialSites={sites}
-      tags={tagsResult}
-      dataWarning={dataWarning}
-    />
-  );
+  return <SiteHubPage initialSites={[]} tags={[]} />;
 }

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db/supabaseAdmin";
-import { fetchLdUser } from "@/lib/auth/ld-user";
+import { getLdUserWithCache } from "@/lib/auth/ld-user";
 import { getSessionIdFromCookies } from "@/lib/auth/ld-oauth";
 import { buildTagOptionsFromSites, loadSitesData } from "@/lib/server/siteData";
-import { getSession } from "@/lib/auth/session-store";
 
 type MaintainerPayload = {
   name: string;
@@ -55,12 +54,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
-      const session = await getSession(sessionId);
-      if (!session) {
+      const user = await getLdUserWithCache({
+        sessionId,
+        options: { requireId: true },
+      });
+      if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-
-      const user = await fetchLdUser(session.accessToken);
       actorId = user.id;
       actorUsername = user.username;
       if (user.trust_level < 2) {
@@ -238,12 +238,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const session = await getSession(sessionId);
-    if (!session) {
+    const user = await getLdUserWithCache({ sessionId });
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const user = await fetchLdUser(session.accessToken);
     const sites = await loadSitesData({
       username: user.username,
       maxRegistrationLimit: user.trust_level,

@@ -128,6 +128,10 @@
 | token_type | text | 否 | bearer | 令牌类型 |
 | access_expires_at | timestamptz | 否 | - | access_token 过期时间 |
 | session_expires_at | timestamptz | 否 | - | 会话过期时间（对齐 cookie Max-Age） |
+| user_id | bigint | 是 | - | 缓存的 LD user_id |
+| user_username | text | 是 | - | 缓存的 LD username |
+| user_trust_level | integer | 是 | - | 缓存的 LD trust_level |
+| user_fetched_at | timestamptz | 是 | - | 缓存更新时间 |
 | created_at | timestamptz | 否 | now() | 创建时间 |
 | updated_at | timestamptz | 否 | now() | 更新时间 |
 
@@ -161,4 +165,3 @@
 - system_notifications_valid_from_idx
 - system_notifications_valid_until_idx
 - system_notifications_is_active_idx
-

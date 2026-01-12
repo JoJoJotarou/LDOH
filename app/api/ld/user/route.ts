@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchLdUser } from "@/lib/auth/ld-user";
+import { getLdUserWithCache } from "@/lib/auth/ld-user";
 import { getSessionIdFromCookies } from "@/lib/auth/ld-oauth";
-import { getSession } from "@/lib/auth/session-store";
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,12 +21,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const session = await getSession(sessionId);
-    if (!session) {
+    const user = await getLdUserWithCache({
+      sessionId,
+      options: { requireId: true },
+    });
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const user = await fetchLdUser(session.accessToken);
     return NextResponse.json({
       id: user.id,
       username: user.username,

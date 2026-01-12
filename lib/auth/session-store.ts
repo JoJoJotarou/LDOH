@@ -7,6 +7,10 @@ export type AuthSession = {
   tokenType: string;
   accessExpiresAt: string;
   sessionExpiresAt: string;
+  userId?: number | null;
+  userUsername?: string | null;
+  userTrustLevel?: number | null;
+  userFetchedAt?: string | null;
 };
 
 type SessionRow = {
@@ -16,6 +20,10 @@ type SessionRow = {
   token_type: string;
   access_expires_at: string;
   session_expires_at: string;
+  user_id?: number | null;
+  user_username?: string | null;
+  user_trust_level?: number | null;
+  user_fetched_at?: string | null;
 };
 
 function toSession(row: SessionRow): AuthSession {
@@ -26,6 +34,11 @@ function toSession(row: SessionRow): AuthSession {
     tokenType: row.token_type,
     accessExpiresAt: row.access_expires_at,
     sessionExpiresAt: row.session_expires_at,
+    userId: row.user_id ?? null,
+    userUsername: row.user_username ?? null,
+    userTrustLevel:
+      typeof row.user_trust_level === "number" ? row.user_trust_level : null,
+    userFetchedAt: row.user_fetched_at ?? null,
   };
 }
 
@@ -45,7 +58,9 @@ export async function createSession(params: {
       access_expires_at: params.accessExpiresAt.toISOString(),
       session_expires_at: params.sessionExpiresAt.toISOString(),
     })
-    .select("id,access_token,refresh_token,token_type,access_expires_at,session_expires_at")
+    .select(
+      "id,access_token,refresh_token,token_type,access_expires_at,session_expires_at,user_id,user_username,user_trust_level,user_fetched_at"
+    )
     .single();
 
   if (response.error || !response.data) {
@@ -60,7 +75,9 @@ export async function createSession(params: {
 export async function getSession(sessionId: string): Promise<AuthSession | null> {
   const response = await supabaseAdmin
     .from("auth_sessions")
-    .select("id,access_token,refresh_token,token_type,access_expires_at,session_expires_at")
+    .select(
+      "id,access_token,refresh_token,token_type,access_expires_at,session_expires_at,user_id,user_username,user_trust_level,user_fetched_at"
+    )
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -94,7 +111,9 @@ export async function updateSessionTokens(params: {
       updated_at: new Date().toISOString(),
     })
     .eq("id", params.sessionId)
-    .select("id,access_token,refresh_token,token_type,access_expires_at,session_expires_at")
+    .select(
+      "id,access_token,refresh_token,token_type,access_expires_at,session_expires_at,user_id,user_username,user_trust_level,user_fetched_at"
+    )
     .single();
 
   if (response.error || !response.data) {
@@ -114,5 +133,28 @@ export async function deleteSession(sessionId: string): Promise<void> {
 
   if (response.error) {
     throw new Error(`Failed to delete auth session: ${response.error.message}`);
+  }
+}
+
+export async function updateSessionUser(params: {
+  sessionId: string;
+  userId: number;
+  username: string;
+  trustLevel: number;
+  fetchedAt: Date;
+}): Promise<void> {
+  const response = await supabaseAdmin
+    .from("auth_sessions")
+    .update({
+      user_id: params.userId,
+      user_username: params.username,
+      user_trust_level: params.trustLevel,
+      user_fetched_at: params.fetchedAt.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", params.sessionId);
+
+  if (response.error) {
+    throw new Error(`Failed to update auth session user: ${response.error.message}`);
   }
 }
