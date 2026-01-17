@@ -205,6 +205,30 @@ export function SiteHubPage({
     );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
+
+      // 根据 HTTP 状态码提供友好的错误提示
+      if (response.status === 400) {
+        throw new Error(data.error || "URL 格式无效，请检查输入");
+      }
+      if (response.status === 401) {
+        throw new Error("未登录，请先登录");
+      }
+      if (response.status === 403) {
+        throw new Error("权限不足，需要 Trust Level 2 以上");
+      }
+      if (response.status === 409) {
+        // URL 冲突错误，显示冲突站点信息
+        if (data.conflictingSite) {
+          throw new Error(
+            `API Base URL 已被站点 "${data.conflictingSite.name}" 使用`
+          );
+        }
+        throw new Error(data.error || "API Base URL 已存在");
+      }
+      if (response.status === 500) {
+        throw new Error("服务器错误，请稍后重试");
+      }
+
       throw new Error(data.error || "保存失败");
     }
     await mutate(); // Revalidate SWR data
