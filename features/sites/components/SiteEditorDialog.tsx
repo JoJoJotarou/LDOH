@@ -540,7 +540,7 @@ export function SiteEditorDialog({
                           setForm((p) => ({ ...p, supportsNsfw: c }))
                         }
                         title="支持 NSFW"
-                        description="是否支持 NSFW（18）"
+                        description="是否支持 NSFW"
                       />
                       {mode === "edit" && canEditVisibility && (
                         <ToggleCard
