@@ -7,6 +7,7 @@ import {
   checkApiBaseUrlExists,
   UrlValidationError,
 } from "@/lib/utils/url";
+import { API_ERROR_CODES, type ApiErrorResponse } from "@/lib/constants/error-codes";
 
 type MaintainerPayload = {
   name: string;
@@ -194,8 +195,22 @@ export async function PATCH(
         : maintainerIds.some((id) => id.toLowerCase() === username.toLowerCase());
 
     if (payload.isVisible !== undefined && !isMaintainer) {
-      return NextResponse.json(
-        { error: "Not allowed to change visibility" },
+      return NextResponse.json<ApiErrorResponse>(
+        {
+          error: "Not allowed to change visibility",
+          code: API_ERROR_CODES.VISIBILITY_PERMISSION_DENIED
+        },
+        { status: 403 }
+      );
+    }
+
+    // 新增：检查站点描述修改权限
+    if (payload.description !== undefined && !isMaintainer) {
+      return NextResponse.json<ApiErrorResponse>(
+        {
+          error: "仅站长可以修改站点描述",
+          code: API_ERROR_CODES.DESCRIPTION_PERMISSION_DENIED
+        },
         { status: 403 }
       );
     }

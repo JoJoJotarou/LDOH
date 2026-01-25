@@ -4,7 +4,6 @@ import {
   extractProtocolAndDomain,
   checkApiBaseUrlExists,
   UrlValidationError,
-  type NormalizedUrl,
   type UrlConflictResult,
 } from "../url";
 import { supabaseAdmin } from "@/lib/db/supabaseAdmin";
@@ -168,7 +167,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists("https://api.example.com");
     expect(result.exists).toBe(false);
@@ -188,7 +187,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists("https://api.example.com");
     expect(result.exists).toBe(true);
@@ -212,7 +211,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists("https://api.example.com");
     expect(result.exists).toBe(true);
@@ -231,7 +230,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists("https://api.example.com");
     expect(result.exists).toBe(true);
@@ -250,7 +249,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists("https://api.example.com/v2");
     expect(result.exists).toBe(false);
@@ -269,7 +268,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists("https://api.example.com:9090");
     expect(result.exists).toBe(false);
@@ -288,7 +287,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists(
       "https://api.example.com",
@@ -315,7 +314,7 @@ describe("checkApiBaseUrlExists", () => {
         error: null,
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     const result = await checkApiBaseUrlExists("https://api.example.com");
     expect(result.exists).toBe(true);
@@ -329,7 +328,7 @@ describe("checkApiBaseUrlExists", () => {
         error: { message: "Database error" },
       }),
     });
-    (supabaseAdmin.from as any) = mockFrom;
+    (supabaseAdmin.from as unknown) = mockFrom;
 
     await expect(
       checkApiBaseUrlExists("https://api.example.com")

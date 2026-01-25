@@ -85,7 +85,7 @@ export function normalizeApiBaseUrl(url: string): NormalizedUrl {
   let parsedUrl: URL;
   try {
     parsedUrl = new URL(trimmed);
-  } catch (error) {
+  } catch {
     throw new UrlValidationError("Invalid URL format", url);
   }
 
@@ -170,8 +170,8 @@ export async function checkApiBaseUrlExists(
     .or(
       // 匹配完全相同的 URL
       `api_base_url.eq.${inputProtocolAndDomain},` +
-      // 匹配带路径的 URL (协议+域名相同)
-      `api_base_url.like.${inputProtocolAndDomain}/%`
+        // 匹配带路径的 URL (协议+域名相同)
+        `api_base_url.like.${inputProtocolAndDomain}/%`
     );
 
   if (excludeSiteId) {
@@ -204,7 +204,7 @@ export async function checkApiBaseUrlExists(
         },
       };
     }
-  } catch (error) {
+  } catch {
     // 如果数据库中的 URL 格式无效,跳过
     console.warn(
       `Invalid URL in database for site ${site.id}: ${site.api_base_url}`

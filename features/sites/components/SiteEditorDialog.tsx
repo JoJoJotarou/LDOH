@@ -61,6 +61,7 @@ type SiteEditorDialogProps = {
   site?: Site | null;
   tags: Tag[];
   canEditVisibility: boolean;
+  canEditDescription?: boolean;
   onClose: () => void;
   onSubmit: (payload: SiteFormData) => Promise<void>;
 };
@@ -93,6 +94,7 @@ export function SiteEditorDialog({
   site,
   tags,
   canEditVisibility,
+  canEditDescription = false,
   onClose,
   onSubmit,
 }: SiteEditorDialogProps) {
@@ -368,6 +370,11 @@ export function SiteEditorDialog({
                     <label className="text-xs font-semibold text-brand-muted uppercase tracking-wider">
                       站点描述
                     </label>
+                    {!canEditDescription && (
+                      <p className="mt-1 text-xs text-red-500 font-medium">
+                        {mode === "create" ? "新建站点时无法填写描述，请在创建后由站长补充" : "仅站长可以修改站点描述"}
+                      </p>
+                    )}
                     <textarea
                       value={form.description}
                       onChange={(e) =>
@@ -376,8 +383,12 @@ export function SiteEditorDialog({
                           description: e.target.value,
                         }))
                       }
+                      disabled={!canEditDescription}
                       placeholder="简要介绍站点的特色..."
-                      className="mt-2 w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-text shadow-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue/20 min-h-[80px]"
+                      className={`mt-2 w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-text shadow-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue/20 min-h-[80px] ${
+                        !canEditDescription ? "bg-gray-50 cursor-not-allowed opacity-60" : ""
+                      }`}
+                      aria-disabled={!canEditDescription}
                     />
                   </div>
 

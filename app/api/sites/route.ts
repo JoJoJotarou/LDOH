@@ -8,6 +8,7 @@ import {
   checkApiBaseUrlExists,
   UrlValidationError,
 } from "@/lib/utils/url";
+import { API_ERROR_CODES, type ApiErrorResponse } from "@/lib/constants/error-codes";
 
 type MaintainerPayload = {
   name: string;
@@ -79,6 +80,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
+      );
+    }
+
+    // 新增：检查描述字段权限
+    // 新建时禁止所有人填写描述，需要站长后续补充
+    if (payload.description && payload.description.trim()) {
+      return NextResponse.json<ApiErrorResponse>(
+        {
+          error: "新建站点时无法填写描述，请在创建后由站长补充",
+          code: API_ERROR_CODES.DESCRIPTION_PERMISSION_DENIED
+        },
+        { status: 403 }
       );
     }
 

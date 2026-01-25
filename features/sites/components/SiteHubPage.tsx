@@ -15,6 +15,7 @@ import { SiteEditorDialog } from "@/features/sites/components/SiteEditorDialog";
 import { SiteLogDialog } from "@/features/sites/components/SiteLogDialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { API_ERROR_CODES } from "@/lib/constants/error-codes";
 
 interface SiteHubPageProps {
   initialSites: Site[];
@@ -214,7 +215,17 @@ export function SiteHubPage({
         throw new Error("未登录，请先登录");
       }
       if (response.status === 403) {
-        throw new Error("权限不足，需要 Trust Level 2 以上");
+        const data = await response.json().catch(() => ({}));
+
+        // 使用错误码判断，而非字符串匹配
+        switch (data.code) {
+          case API_ERROR_CODES.DESCRIPTION_PERMISSION_DENIED:
+            throw new Error("权限不足，仅站长可以修改站点描述");
+          case API_ERROR_CODES.VISIBILITY_PERMISSION_DENIED:
+            throw new Error("权限不足，仅站长可以修改站点可见性");
+          default:
+            throw new Error(data.error || "权限不足，需要 Trust Level 2 以上");
+        }
       }
       if (response.status === 409) {
         // URL 冲突错误，显示冲突站点信息
@@ -349,6 +360,11 @@ export function SiteHubPage({
         site={editingSite}
         tags={tagOptions}
         canEditVisibility={
+          editorMode === "edit" && editingSite
+            ? isSiteMaintainer(editingSite)
+            : false
+        }
+        canEditDescription={
           editorMode === "edit" && editingSite
             ? isSiteMaintainer(editingSite)
             : false
