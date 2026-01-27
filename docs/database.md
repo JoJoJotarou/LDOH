@@ -150,6 +150,7 @@
 | id | uuid | 否 | gen_random_uuid() | 通知主键 |
 | title | text | 否 | - | 通知标题 |
 | content | text | 否 | - | 通知内容（支持 Markdown 格式，可包含链接） |
+| min_trust_level | integer | 是 | - | 最低可见等级（为空表示所有已登录用户可见） |
 | valid_from | timestamptz | 否 | now() | 生效时间 |
 | valid_until | timestamptz | 是 | - | 失效时间（null 表示永久有效） |
 | is_active | boolean | 否 | true | 是否启用 |

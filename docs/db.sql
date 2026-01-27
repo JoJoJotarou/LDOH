@@ -89,6 +89,7 @@ CREATE TABLE public.system_notifications (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   title text NOT NULL,
   content text NOT NULL,
+  min_trust_level integer,
   valid_from timestamp with time zone NOT NULL DEFAULT now(),
   valid_until timestamp with time zone,
   is_active boolean NOT NULL DEFAULT true,

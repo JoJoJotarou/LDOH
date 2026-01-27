@@ -101,10 +101,12 @@ lib/contracts/           # 类型定义
 
 - 表：`system_notifications`（见 `docs/system-notifications.md` / `docs/database.md`）
 - 获取通知：`GET /api/notifications`
+- 需登录可见；支持设置最小可见等级（`min_trust_level`，为空表示所有已登录用户可见）
 - 生效规则：
   - `is_active = true`
   - `valid_from <= now()`
   - `valid_until is null 或 valid_until >= now()`
+  - `min_trust_level is null 或 min_trust_level <= 当前用户等级`
 
 ## 维护者规则
 

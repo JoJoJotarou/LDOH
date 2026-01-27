@@ -82,6 +82,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    const siteName = payload.name.trim();
+    const registrationLimit = Number(payload.registrationLimit) || 0;
 
     // 新增：检查描述字段权限
     // 新建时禁止所有人填写描述，需要站长后续补充
@@ -113,56 +115,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const insertResponse = await supabaseAdmin
-      .from("site")
-      .insert({
-        name: payload.name.trim(),
-        description: normalizeString(payload.description) || null,
-        registration_limit: Number(payload.registrationLimit) || 0,
-        api_base_url: normalizedApiBaseUrl,
-        supports_immersive_translation: Boolean(
-          payload.supportsImmersiveTranslation
-        ),
-        supports_ldc: Boolean(payload.supportsLdc),
-        supports_checkin: Boolean(payload.supportsCheckin),
-        supports_nsfw: Boolean(payload.supportsNsfw),
-        checkin_url: normalizeString(payload.checkinUrl) || null,
-        checkin_note: normalizeString(payload.checkinNote) || null,
-        benefit_url: normalizeString(payload.benefitUrl) || null,
-        rate_limit: normalizeString(payload.rateLimit) || null,
-        status_url: normalizeString(payload.statusUrl) || null,
-        is_visible: payload.isVisible ?? true,
-        created_by: actorId > 0 ? actorId : null,
-        updated_by: actorId > 0 ? actorId : null,
-      })
-      .select("id")
-      .single();
-
-    if (insertResponse.error || !insertResponse.data) {
-      return NextResponse.json(
-        { error: insertResponse.error?.message || "Insert failed" },
-        { status: 500 }
-      );
-    }
-
-    const siteId = insertResponse.data.id as string;
-
     const tags = normalizeList<string>(payload.tags)
       .map((tag) => tag.trim())
       .filter(Boolean);
-    const tagInsertPromise =
-      tags.length > 0
-        ? supabaseAdmin
-            .from("site_tags")
-            .insert(
-              tags.map((tagId) => ({
-                site_id: siteId,
-                tag_id: tagId,
-                created_by: actorId > 0 ? actorId : null,
-              }))
-            )
-        : Promise.resolve({ error: null });
-
     const maintainers = normalizeList<MaintainerPayload>(payload.maintainers)
       .map((maintainer) => ({
         name: normalizeString(maintainer.name),
@@ -187,20 +142,6 @@ export async function POST(request: NextRequest) {
         };
       })
     );
-    const maintainerInsertPromise =
-      resolvedMaintainers.length > 0
-        ? supabaseAdmin.from("site_maintainers").insert(
-            resolvedMaintainers.map((maintainer, index) => ({
-              site_id: siteId,
-              name: maintainer.name,
-              username: maintainer.username || null,
-              profile_url: maintainer.profileUrl,
-              sort_order: index,
-              created_by: actorId > 0 ? actorId : null,
-              updated_by: actorId > 0 ? actorId : null,
-            }))
-          )
-        : Promise.resolve({ error: null });
 
     const extensionLinks = normalizeList<ExtensionPayload>(
       payload.extensionLinks
@@ -210,46 +151,42 @@ export async function POST(request: NextRequest) {
         url: normalizeString(link.url),
       }))
       .filter((link) => link.label && link.url);
-    const extensionInsertPromise =
-      extensionLinks.length > 0
-        ? supabaseAdmin.from("site_extension_links").insert(
-            extensionLinks.map((link, index) => ({
-              site_id: siteId,
-              label: link.label,
-              url: link.url,
-              sort_order: index,
-              created_by: actorId > 0 ? actorId : null,
-              updated_by: actorId > 0 ? actorId : null,
-            }))
-          )
-        : Promise.resolve({ error: null });
-
-    const [tagInsert, maintainerInsert, extensionInsert] = await Promise.all([
-      tagInsertPromise,
-      maintainerInsertPromise,
-      extensionInsertPromise,
-    ]);
-
-    const insertError =
-      tagInsert.error || maintainerInsert.error || extensionInsert.error;
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
-    }
-
-    const logInsert = await supabaseAdmin.from("site_logs").insert({
-      site_id: siteId,
-      action: "CREATE",
-      actor_id: actorId,
-      actor_username: actorUsername,
-      message: "创建站点",
-    });
-    if (logInsert.error) {
+    const createdBy = actorId > 0 ? actorId : null;
+    const createResponse = await supabaseAdmin.rpc(
+      "create_site_with_notification",
+      {
+        p_name: siteName,
+        p_description: normalizeString(payload.description) || null,
+        p_registration_limit: registrationLimit,
+        p_api_base_url: normalizedApiBaseUrl,
+        p_supports_immersive_translation: Boolean(
+          payload.supportsImmersiveTranslation
+        ),
+        p_supports_ldc: Boolean(payload.supportsLdc),
+        p_supports_checkin: Boolean(payload.supportsCheckin),
+        p_supports_nsfw: Boolean(payload.supportsNsfw),
+        p_checkin_url: normalizeString(payload.checkinUrl) || null,
+        p_checkin_note: normalizeString(payload.checkinNote) || null,
+        p_benefit_url: normalizeString(payload.benefitUrl) || null,
+        p_rate_limit: normalizeString(payload.rateLimit) || null,
+        p_status_url: normalizeString(payload.statusUrl) || null,
+        p_is_visible: payload.isVisible ?? true,
+        p_actor_id: actorId,
+        p_actor_username: actorUsername,
+        p_created_by: createdBy,
+        p_tags: tags,
+        p_maintainers: resolvedMaintainers,
+        p_extension_links: extensionLinks,
+      }
+    );
+    if (createResponse.error || !createResponse.data) {
       return NextResponse.json(
-        { error: logInsert.error.message },
+        { error: createResponse.error?.message || "Insert failed" },
         { status: 500 }
       );
     }
 
+    const siteId = createResponse.data as string;
     return NextResponse.json({ id: siteId });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create site";
