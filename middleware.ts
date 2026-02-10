@@ -73,6 +73,7 @@ async function getSession(sessionId: string) {
     token_type: string;
     access_expires_at: string;
     session_expires_at: string;
+    user_id?: number | null;
   }>;
   if (!data || data.length === 0) return null;
   return data[0];
@@ -138,6 +139,30 @@ function shouldSkipPath(pathname: string) {
   if (pathname.startsWith("/sitemap")) return true;
   if (pathname.startsWith("/auth/login")) return true;
   return false;
+}
+
+function isAdminPath(pathname: string) {
+  return pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+}
+
+async function checkIsAdmin(userId: number): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return false;
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/admin_users?user_id=eq.${encodeURIComponent(
+      userId
+    )}&select=user_id`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "count=none",
+      },
+    }
+  );
+  if (!response.ok) return false;
+  const data = (await response.json()) as Array<{ user_id: number }>;
+  return Array.isArray(data) && data.length > 0;
 }
 
 async function refreshToken(
@@ -263,6 +288,17 @@ export async function middleware(request: NextRequest) {
           Date.now() + getTokenCookieMaxAge() * 1000
         ).toISOString(),
       });
+
+      if (isAdminPath(pathname)) {
+        const userId = session.user_id;
+        if (!userId || !(await checkIsAdmin(userId))) {
+          if (isApiRequest) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+          }
+          return NextResponse.redirect(new URL("/", request.url));
+        }
+      }
+
       return NextResponse.next();
     }
 
@@ -271,6 +307,16 @@ export async function middleware(request: NextRequest) {
       const refreshUrl = new URL("/api/oauth/refresh", request.url);
       refreshUrl.searchParams.set("redirect", returnTo);
       return NextResponse.redirect(refreshUrl);
+    }
+  }
+
+  if (isAdminPath(pathname)) {
+    const userId = session.user_id;
+    if (!userId || !(await checkIsAdmin(userId))) {
+      if (isApiRequest) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/", request.url));
     }
   }
 

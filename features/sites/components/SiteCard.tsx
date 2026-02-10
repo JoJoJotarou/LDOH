@@ -43,6 +43,7 @@ import {
   CreditCard,
   Pencil,
   History,
+  Flag,
 } from "lucide-react";
 
 interface SiteCardProps {
@@ -55,6 +56,7 @@ interface SiteCardProps {
   onViewLogs: (site: Site) => void;
   onToggleFavorite: (id: string) => void;
   onToggleHidden: (id: string) => void;
+  onReport?: (site: Site) => void;
 }
 
 type HealthViewStatus = "up" | "slow" | "down" | "unknown";
@@ -135,6 +137,7 @@ export function SiteCard({
   onViewLogs,
   onToggleFavorite,
   onToggleHidden,
+  onReport,
 }: SiteCardProps) {
   const healthStatus = getHealthStatus(site.health);
   const healthDotClass = getHealthDotClass(healthStatus);
@@ -768,6 +771,22 @@ export function SiteCard({
                   </TooltipTrigger>
                   <TooltipContent>隐藏</TooltipContent>
                 </Tooltip>
+
+                {onReport && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onReport(site)}
+                        className="h-7 w-7 text-muted-foreground hover:text-black"
+                      >
+                        <Flag className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>举报</TooltipContent>
+                  </Tooltip>
+                )}
               </TooltipProvider>
             </div>
           </div>
@@ -1015,6 +1034,19 @@ export function SiteCard({
                   <EyeOff className="h-4 w-4" />
                 </Button>
               </motion.div>
+              {onReport && (
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onReport(site)}
+                    className="h-8 w-8 text-muted-foreground hover:text-black"
+                    title="举报"
+                  >
+                    <Flag className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </div>
 

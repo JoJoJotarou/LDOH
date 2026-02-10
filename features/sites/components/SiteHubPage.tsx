@@ -13,6 +13,7 @@ import { FilterBar, ViewMode } from "@/features/sites/components/FilterBar";
 import { SiteCard } from "@/features/sites/components/SiteCard";
 import { SiteEditorDialog } from "@/features/sites/components/SiteEditorDialog";
 import { SiteLogDialog } from "@/features/sites/components/SiteLogDialog";
+import { SiteReportDialog } from "@/features/sites/components/SiteReportDialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { API_ERROR_CODES } from "@/lib/constants/error-codes";
@@ -81,6 +82,10 @@ export function SiteHubPage({
   // Log Dialog State
   const [logOpen, setLogOpen] = useState(false);
   const [viewingLogSite, setViewingLogSite] = useState<Site | null>(null);
+
+  // Report Dialog State
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportingSite, setReportingSite] = useState<Site | null>(null);
 
   // 仅在客户端读取本地偏好
   useEffect(() => {
@@ -185,6 +190,21 @@ export function SiteHubPage({
   const handleViewLogs = (site: Site) => {
     setViewingLogSite(site);
     setLogOpen(true);
+  };
+
+  const handleReport = (site: Site) => {
+    setReportingSite(site);
+    setReportOpen(true);
+  };
+
+  const handleReportSubmitted = () => {
+    if (reportingSite) {
+      userPreferenceService.hideSite(reportingSite.id);
+      setHidden([...hidden, reportingSite.id]);
+    }
+    setReportOpen(false);
+    setReportingSite(null);
+    mutate();
   };
 
   const handleSubmit = async (payload: Record<string, unknown>) => {
@@ -331,6 +351,7 @@ export function SiteHubPage({
                 onViewLogs={handleViewLogs}
                 onToggleFavorite={handleToggleFavorite}
                 onToggleHidden={handleToggleHidden}
+                onReport={handleReport}
               />
             ))}
           </motion.div>
@@ -376,6 +397,19 @@ export function SiteHubPage({
           siteId={viewingLogSite.id}
           siteName={viewingLogSite.name}
           onClose={() => setLogOpen(false)}
+        />
+      )}
+
+      {reportingSite && (
+        <SiteReportDialog
+          open={reportOpen}
+          siteId={reportingSite.id}
+          siteName={reportingSite.name}
+          onClose={() => {
+            setReportOpen(false);
+            setReportingSite(null);
+          }}
+          onSubmitted={handleReportSubmitted}
         />
       )}
     </>

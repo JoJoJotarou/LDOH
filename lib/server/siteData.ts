@@ -106,6 +106,7 @@ async function loadSitesFromSupabase(options?: {
     siteQuery = siteQuery.eq("is_visible", true);
   }
   siteQuery = siteQuery.eq("is_active", true);
+  siteQuery = siteQuery.is("deleted_at", null);
   if (
     typeof options?.maxRegistrationLimit === "number" &&
     Number.isFinite(options.maxRegistrationLimit)
