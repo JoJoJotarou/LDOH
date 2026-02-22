@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Site } from "@/lib/contracts/types/site";
 import { Tag } from "@/lib/contracts/types/tag";
 import { FilterOptions } from "@/lib/contracts/types/filter";
@@ -43,6 +44,10 @@ export function SiteHubPage({
   tags,
   dataWarning,
 }: SiteHubPageProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   // SWR for Sites Data
   const { data: sitesData, mutate } = useSWR<SitesResponse>(
     "/api/sites",
@@ -86,6 +91,33 @@ export function SiteHubPage({
   // Report Dialog State
   const [reportOpen, setReportOpen] = useState(false);
   const [reportingSite, setReportingSite] = useState<Site | null>(null);
+
+  useEffect(() => {
+    const queryFromUrl = searchParams.get("q") ?? "";
+    setSearchQuery((prev) => (prev === queryFromUrl ? prev : queryFromUrl));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      if (searchQuery.trim()) {
+        nextParams.set("q", searchQuery);
+      } else {
+        nextParams.delete("q");
+      }
+
+      const nextSearch = nextParams.toString();
+      const currentSearch = searchParams.toString();
+      if (nextSearch === currentSearch) {
+        return;
+      }
+
+      const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
+      router.replace(nextUrl, { scroll: false });
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [pathname, router, searchParams, searchQuery]);
 
   // 仅在客户端读取本地偏好
   useEffect(() => {
