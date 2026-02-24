@@ -45,6 +45,7 @@ export default function AdminNotificationsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   const openCreate = () => {
@@ -68,7 +69,10 @@ export default function AdminNotificationsPage() {
 
   const save = async () => {
     if (!form.title.trim() || !form.content.trim()) return;
+    const actionText = editingId ? "更新" : "创建";
+    if (!confirm(`确定要${actionText}该通知吗？`)) return;
     setSaving(true);
+    setMessage("");
 
     const payload = {
       title: form.title,
@@ -99,6 +103,7 @@ export default function AdminNotificationsPage() {
 
     setSaving(false);
     setShowForm(false);
+    setMessage(editingId ? "更新成功" : "创建成功");
     mutate();
   };
 
@@ -119,6 +124,8 @@ export default function AdminNotificationsPage() {
   };
 
   const toggleActive = async (n: NotifRow) => {
+    const actionLabel = n.is_active ? "禁用" : "启用";
+    if (!confirm(`确定要${actionLabel}通知「${n.title}」吗？`)) return;
     const actionKey = `${n.id}:toggle`;
     setPendingAction(actionKey);
     try {
@@ -149,6 +156,15 @@ export default function AdminNotificationsPage() {
           新建通知
         </button>
       </div>
+      {message && (
+        <p
+          className={`text-sm ${
+            message.includes("成功") ? "text-green-600" : "text-red-500"
+          }`}
+        >
+          {message}
+        </p>
+      )}
 
       {showForm && (
         <div className="rounded-xl border border-neutral-200 bg-white p-5 space-y-3">

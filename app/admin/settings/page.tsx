@@ -23,6 +23,7 @@ export default function AdminSettingsPage() {
 
   const handleSave = async () => {
     if (Object.keys(form).length === 0) return;
+    if (!confirm("确定要保存系统配置变更吗？")) return;
     setSaving(true);
     setMessage("");
 

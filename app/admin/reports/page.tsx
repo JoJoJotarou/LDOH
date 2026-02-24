@@ -86,6 +86,11 @@ export default function AdminReportsPage() {
   }, []);
 
   const handleAction = async (reportId: string, action: "reviewed" | "dismissed") => {
+    const confirmText =
+      action === "reviewed"
+        ? "确认处理后将应用该报告标记并下线站点，是否继续？"
+        : "确认驳回该报告吗？";
+    if (!confirm(confirmText)) return;
     const actionKey = `${reportId}:${action}`;
     setPendingAction(actionKey);
     try {

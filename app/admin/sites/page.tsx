@@ -55,6 +55,8 @@ export default function AdminSitesPage() {
   }, [searchInput]);
 
   const toggleVisibility = async (site: SiteRow) => {
+    const actionLabel = site.is_active ? "下线" : "上线";
+    if (!confirm(`确定要${actionLabel}站点「${site.name}」吗？`)) return;
     const actionKey = `${site.id}:visibility`;
     setPendingAction(actionKey);
     try {
@@ -74,6 +76,7 @@ export default function AdminSitesPage() {
   };
 
   const restoreRunaway = async (site: SiteRow) => {
+    if (!confirm(`确定要恢复跑路站点「${site.name}」并重新上线吗？`)) return;
     const actionKey = `${site.id}:runaway`;
     setPendingAction(actionKey);
     try {
@@ -93,6 +96,7 @@ export default function AdminSitesPage() {
   };
 
   const restoreFakeCharity = async (site: SiteRow) => {
+    if (!confirm(`确定要恢复伪公益站点「${site.name}」并重新上线吗？`)) return;
     const actionKey = `${site.id}:fake_charity`;
     setPendingAction(actionKey);
     try {

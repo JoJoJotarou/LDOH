@@ -31,6 +31,7 @@ export default function AdminAdminsPage() {
       setError("请输入用户 ID");
       return;
     }
+    if (!confirm(`确定要添加 user_id=${newUserId} 为管理员吗？`)) return;
     setAdding(true);
     const res = await fetch("/api/admin/admins", {
       method: "POST",
@@ -67,6 +68,8 @@ export default function AdminAdminsPage() {
   };
 
   const changeRole = async (admin: AdminRow, role: string) => {
+    if (admin.role === role) return;
+    if (!confirm(`确定将 user_id=${admin.user_id} 的角色从 ${admin.role} 修改为 ${role} 吗？`)) return;
     const actionKey = `${admin.id}:role`;
     setPendingAction(actionKey);
     try {
