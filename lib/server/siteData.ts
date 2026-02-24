@@ -62,6 +62,14 @@ type SupabaseHealth = {
   response_url: string | null;
 };
 
+type SupabaseReport = {
+  site_id: string;
+  report_type: string;
+  reason: string | null;
+  reporter_username: string | null;
+  created_at: string | null;
+};
+
 type MaintainerEntry = {
   name: string;
   id: string;
@@ -96,6 +104,7 @@ async function loadSitesFromSupabase(options?: {
   includeIds?: string[];
   includeHidden?: boolean;
   maxRegistrationLimit?: number;
+  runawayOnly?: boolean;
 }): Promise<Site[]> {
   let siteQuery = supabaseAdmin.from("site").select("*");
   if (options?.includeHidden) {
@@ -107,9 +116,13 @@ async function loadSitesFromSupabase(options?: {
   } else {
     siteQuery = siteQuery.eq("is_only_maintainer_visible", true);
   }
-  siteQuery = siteQuery.eq("is_active", true);
-  siteQuery = siteQuery.eq("is_runaway", false);
-  siteQuery = siteQuery.eq("is_fake_charity", false);
+  if (options?.runawayOnly) {
+    siteQuery = siteQuery.eq("is_runaway", true);
+  } else {
+    siteQuery = siteQuery.eq("is_active", true);
+    siteQuery = siteQuery.eq("is_runaway", false);
+    siteQuery = siteQuery.eq("is_fake_charity", false);
+  }
   if (
     typeof options?.maxRegistrationLimit === "number" &&
     Number.isFinite(options.maxRegistrationLimit)
@@ -134,6 +147,7 @@ async function loadSitesFromSupabase(options?: {
     maintainersResponse,
     extensionLinksResponse,
     healthResponse,
+    reportsResponse,
   ] =
     await Promise.all([
       supabaseAdmin
@@ -152,6 +166,11 @@ async function loadSitesFromSupabase(options?: {
         .from("site_health_status")
         .select("site_id,status,http_status,latency_ms,checked_at,error,response_url")
         .in("site_id", siteIds),
+      supabaseAdmin
+        .from("site_reports")
+        .select("site_id,report_type,reason,reporter_username,created_at")
+        .in("site_id", siteIds)
+        .eq("status", "pending"),
     ]);
 
   if (tagLinksResponse.error) {
@@ -170,12 +189,16 @@ async function loadSitesFromSupabase(options?: {
   if (healthResponse.error) {
     throw new Error(`Supabase fetch failed: ${healthResponse.error.message}`);
   }
+  if (reportsResponse.error) {
+    throw new Error(`Supabase fetch failed: ${reportsResponse.error.message}`);
+  }
 
   const tagLinks = (tagLinksResponse.data ?? []) as SupabaseTagLink[];
   const maintainers = (maintainersResponse.data ?? []) as SupabaseMaintainer[];
   const extensionLinks = (extensionLinksResponse.data ??
     []) as SupabaseExtensionLink[];
   const healthRows = (healthResponse.data ?? []) as SupabaseHealth[];
+  const pendingReports = (reportsResponse.data ?? []) as SupabaseReport[];
 
   const tagsBySite = new Map<string, string[]>();
   for (const link of tagLinks) {
@@ -232,6 +255,23 @@ async function loadSitesFromSupabase(options?: {
     }
   }
 
+  const pendingReportSites = new Set(
+    pendingReports.map((report) => report.site_id).filter(Boolean)
+  );
+  const pendingReportBySite = new Map<string, Site["pendingReport"]>();
+  for (const report of pendingReports) {
+    if (!report.site_id || pendingReportBySite.has(report.site_id)) continue;
+    if (report.report_type !== "runaway" && report.report_type !== "fake_charity") {
+      continue;
+    }
+    pendingReportBySite.set(report.site_id, {
+      reportType: report.report_type,
+      reason: report.reason ?? "",
+      reporterUsername: report.reporter_username ?? undefined,
+      createdAt: report.created_at ?? undefined,
+    });
+  }
+
   return sites.map((site) => ({
     id: site.id,
     name: site.name,
@@ -259,6 +299,8 @@ async function loadSitesFromSupabase(options?: {
     isVisible: site.is_only_maintainer_visible ?? true,
     isRunaway: Boolean(site.is_runaway),
     isFakeCharity: Boolean(site.is_fake_charity),
+    hasPendingReport: pendingReportSites.has(site.id),
+    pendingReport: pendingReportBySite.get(site.id),
     updatedAt: site.updated_at || "",
     health: healthBySite.get(site.id),
   }));
@@ -312,6 +354,7 @@ export async function loadSitesData(options?: {
   username?: string;
   includeHidden?: boolean;
   maxRegistrationLimit?: number;
+  runawayOnly?: boolean;
 }): Promise<Site[]> {
   ensureConfigured();
   const includeIds =
@@ -322,6 +365,7 @@ export async function loadSitesData(options?: {
     includeIds,
     includeHidden: options?.includeHidden,
     maxRegistrationLimit: options?.maxRegistrationLimit,
+    runawayOnly: options?.runawayOnly,
   });
   if (!validateSites(sites)) {
     throw new Error("Supabase returned invalid site data");

@@ -52,6 +52,8 @@ interface SiteCardProps {
   isHidden: boolean;
   canEdit: boolean;
   variant?: "grid" | "list";
+  isReported?: boolean;
+  hideActions?: boolean;
   onEdit: (site: Site) => void;
   onViewLogs: (site: Site) => void;
   onToggleFavorite: (id: string) => void;
@@ -133,6 +135,8 @@ export function SiteCard({
   isHidden,
   canEdit,
   variant = "grid",
+  isReported = false,
+  hideActions = false,
   onEdit,
   onViewLogs,
   onToggleFavorite,
@@ -720,7 +724,7 @@ export function SiteCard({
             </TooltipProvider>
 
             {/* 操作按钮 */}
-            <div className="flex items-center gap-1 shrink-0">
+            {!hideActions && <div className="flex items-center gap-1 shrink-0">
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -799,16 +803,20 @@ export function SiteCard({
                         size="icon"
                         variant="ghost"
                         onClick={() => onReport(site)}
-                        className="h-7 w-7 text-muted-foreground hover:text-black"
+                        className={`h-7 w-7 ${
+                          isReported
+                            ? "bg-red-50 text-red-600 hover:bg-red-50 hover:text-red-600"
+                            : "text-muted-foreground hover:text-black"
+                        }`}
                       >
                         <Flag className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>报告</TooltipContent>
+                    <TooltipContent>{isReported ? "查看报告" : "报告"}</TooltipContent>
                   </Tooltip>
                 )}
               </TooltipProvider>
-            </div>
+            </div>}
           </div>
         </Card>
       </motion.div>
@@ -1001,7 +1009,7 @@ export function SiteCard({
             </div>
 
             {/* Actions */}
-            <div className="flex shrink-0 gap-0">
+            {!hideActions && <div className="flex shrink-0 gap-0">
               {canEdit && (
                 <motion.div whileTap={{ scale: 0.95 }}>
                   <Button
@@ -1060,14 +1068,18 @@ export function SiteCard({
                     size="icon"
                     variant="ghost"
                     onClick={() => onReport(site)}
-                    className="h-8 w-8 text-muted-foreground hover:text-black"
-                    title="报告"
+                    className={`h-8 w-8 ${
+                      isReported
+                        ? "bg-red-50 text-red-600 hover:bg-red-50 hover:text-red-600"
+                        : "text-muted-foreground hover:text-black"
+                    }`}
+                    title={isReported ? "查看报告" : "报告"}
                   >
                     <Flag className="h-4 w-4" />
                   </Button>
                 </motion.div>
               )}
-            </div>
+            </div>}
           </div>
 
           {/* Content Group: Tags + Description */}

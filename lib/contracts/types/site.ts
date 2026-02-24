@@ -39,6 +39,15 @@ export interface SiteHealth {
   responseUrl?: string;
 }
 
+export type SitePendingReportType = "runaway" | "fake_charity";
+
+export interface SitePendingReport {
+  reportType: SitePendingReportType;
+  reason: string;
+  reporterUsername?: string;
+  createdAt?: string;
+}
+
 /**
  * 公益站点完整信息
  */
@@ -85,6 +94,10 @@ export interface Site {
   isRunaway?: boolean;
   /** 是否伪公益站点 */
   isFakeCharity?: boolean;
+  /** 是否存在待处理报告 */
+  hasPendingReport?: boolean;
+  /** 待处理报告摘要 */
+  pendingReport?: SitePendingReport;
   /** 更新时间 (可选) */
   updatedAt?: string;
   /** 健康检查状态 (可选) */

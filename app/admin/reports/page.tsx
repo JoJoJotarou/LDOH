@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import useSWR from "swr";
 import {
-  Search,
   ChevronLeft,
   ChevronRight,
   CheckCircle,

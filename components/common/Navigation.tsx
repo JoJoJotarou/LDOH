@@ -42,6 +42,14 @@ export function Navigation({ username }: NavigationProps) {
             >
               公益站
             </Link>
+            <span className="h-3.5 w-px bg-brand-border/80" aria-hidden="true" />
+            <Link
+              href="/runaway-sites"
+              className="rounded-full px-3 py-1 transition hover:text-brand-text"
+            >
+              公益站（🏃‍♀️）
+            </Link>
+            <span className="h-3.5 w-px bg-brand-border/80" aria-hidden="true" />
             <Link
               href="/open-projects"
               className="rounded-full px-3 py-1 transition hover:text-brand-text"

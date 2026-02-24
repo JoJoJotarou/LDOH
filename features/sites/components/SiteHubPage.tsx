@@ -91,6 +91,7 @@ export function SiteHubPage({
   // Report Dialog State
   const [reportOpen, setReportOpen] = useState(false);
   const [reportingSite, setReportingSite] = useState<Site | null>(null);
+  const [reportedSiteIds, setReportedSiteIds] = useState<string[]>([]);
   const allowUrlToStateSyncRef = useRef(true);
   const hasInitializedFromUrlRef = useRef(false);
 
@@ -247,8 +248,9 @@ export function SiteHubPage({
 
   const handleReportSubmitted = () => {
     if (reportingSite) {
-      userPreferenceService.hideSite(reportingSite.id);
-      setHidden([...hidden, reportingSite.id]);
+      setReportedSiteIds((prev) =>
+        prev.includes(reportingSite.id) ? prev : [...prev, reportingSite.id]
+      );
     }
     setReportOpen(false);
     setReportingSite(null);
@@ -395,6 +397,10 @@ export function SiteHubPage({
                 isHidden={hidden.includes(site.id)}
                 canEdit={canManageSites}
                 variant={viewMode}
+                isReported={
+                  Boolean(site.hasPendingReport) ||
+                  reportedSiteIds.includes(site.id)
+                }
                 onEdit={handleOpenEdit}
                 onViewLogs={handleViewLogs}
                 onToggleFavorite={handleToggleFavorite}
@@ -453,6 +459,11 @@ export function SiteHubPage({
           open={reportOpen}
           siteId={reportingSite.id}
           siteName={reportingSite.name}
+          viewOnly={
+            Boolean(reportingSite.hasPendingReport) ||
+            reportedSiteIds.includes(reportingSite.id)
+          }
+          pendingReport={reportingSite.pendingReport}
           onClose={() => {
             setReportOpen(false);
             setReportingSite(null);

@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabaseAdmin
       .from("site")
-      .select("id,name,description,api_base_url,is_only_maintainer_visible,is_active,is_runaway,is_fake_charity,deleted_at,deleted_by,updated_at,registration_limit", { count: "exact" });
+      .select("id,name,description,api_base_url,is_only_maintainer_visible,is_active,is_runaway,is_fake_charity,updated_at,registration_limit", { count: "exact" });
 
     if (search) {
       query = query.or(

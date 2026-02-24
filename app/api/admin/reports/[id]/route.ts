@@ -54,7 +54,7 @@ export async function PATCH(
   if (newStatus === "reviewed") {
     await supabaseAdmin
       .from("site")
-      .update({ [updateField]: true })
+      .update({ [updateField]: true, is_active: false })
       .eq("id", report.site_id);
   }
 

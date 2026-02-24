@@ -3,9 +3,8 @@
 import { useState, useCallback } from "react";
 import useSWR from "swr";
 import {
-  Eye,
-  EyeOff,
-  Trash2,
+  Power,
+  PowerOff,
   RotateCcw,
   Search,
   ChevronLeft,
@@ -23,7 +22,6 @@ type SiteRow = {
   is_active: boolean | null;
   is_runaway: boolean | null;
   is_fake_charity: boolean | null;
-  deleted_at: string | null;
   updated_at: string | null;
   registration_limit: number | null;
 };
@@ -63,14 +61,21 @@ export default function AdminSitesPage() {
     mutate();
   };
 
-  const deleteSite = async (site: SiteRow) => {
-    if (!confirm(`确定要删除站点「${site.name}」吗？（可恢复）`)) return;
-    await fetch(`/api/admin/sites/${site.id}`, { method: "DELETE" });
+  const restoreRunaway = async (site: SiteRow) => {
+    await fetch(`/api/admin/sites/${site.id}/runaway`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_runaway: false }),
+    });
     mutate();
   };
 
-  const restoreSite = async (site: SiteRow) => {
-    await fetch(`/api/admin/sites/${site.id}/restore`, { method: "PATCH" });
+  const restoreFakeCharity = async (site: SiteRow) => {
+    await fetch(`/api/admin/sites/${site.id}/fake-charity`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_fake_charity: false }),
+    });
     mutate();
   };
 
@@ -125,7 +130,7 @@ export default function AdminSitesPage() {
                   加载中...
                 </td>
               </tr>
-            ) : !data?.sites.length ? (
+            ) : !(data?.sites?.length) ? (
               <tr>
                 <td
                   colSpan={6}
@@ -136,20 +141,10 @@ export default function AdminSitesPage() {
               </tr>
             ) : (
               data.sites.map((site) => {
-                const isDeleted = Boolean(site.deleted_at);
                 return (
-                  <tr
-                    key={site.id}
-                    className={`border-b border-neutral-50 ${
-                      isDeleted ? "bg-red-50/50 opacity-60" : ""
-                    }`}
-                  >
+                  <tr key={site.id} className="border-b border-neutral-50">
                     <td className="px-4 py-3">
-                      <span
-                        className={isDeleted ? "line-through" : ""}
-                      >
-                        {site.name}
-                      </span>
+                      {site.name}
                     </td>
                     <td className="max-w-[200px] truncate px-4 py-3 text-neutral-500">
                       {site.api_base_url}
@@ -158,18 +153,26 @@ export default function AdminSitesPage() {
                       {site.registration_limit ?? "-"}
                     </td>
                     <td className="px-4 py-3">
-                      {isDeleted ? (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
-                          已删除
-                        </span>
-                      ) : site.is_active ? (
+                      {site.is_active ? (
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
-                          显示中
+                          已上线
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
-                          已隐藏
-                        </span>
+                        <div className="flex flex-wrap items-center gap-1">
+                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+                            已下线
+                          </span>
+                          {site.is_runaway && (
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                              跑路
+                            </span>
+                          )}
+                          {site.is_fake_charity && (
+                            <span className="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-700">
+                              伪公益
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-neutral-400">
@@ -179,37 +182,34 @@ export default function AdminSitesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1">
-                        {isDeleted ? (
+                        <button
+                          onClick={() => toggleVisibility(site)}
+                          title={site.is_active ? "下线站点" : "上线站点"}
+                          className="rounded p-1.5 text-neutral-500 hover:bg-neutral-100"
+                        >
+                          {site.is_active ? (
+                            <PowerOff size={15} />
+                          ) : (
+                            <Power size={15} />
+                          )}
+                        </button>
+                        {site.is_runaway && (
                           <button
-                            onClick={() => restoreSite(site)}
-                            title="恢复"
-                            className="rounded p-1.5 text-green-600 hover:bg-green-50"
+                            onClick={() => restoreRunaway(site)}
+                            title="恢复跑路并上线"
+                            className="rounded p-1.5 text-red-600 hover:bg-red-50"
                           >
                             <RotateCcw size={15} />
                           </button>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => toggleVisibility(site)}
-                              title={
-                                site.is_active ? "隐藏站点" : "显示站点"
-                              }
-                              className="rounded p-1.5 text-neutral-500 hover:bg-neutral-100"
-                            >
-                              {site.is_active ? (
-                                <EyeOff size={15} />
-                              ) : (
-                                <Eye size={15} />
-                              )}
-                            </button>
-                            <button
-                              onClick={() => deleteSite(site)}
-                              title="删除"
-                              className="rounded p-1.5 text-red-500 hover:bg-red-50"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </>
+                        )}
+                        {site.is_fake_charity && (
+                          <button
+                            onClick={() => restoreFakeCharity(site)}
+                            title="恢复伪公益并上线"
+                            className="rounded p-1.5 text-orange-600 hover:bg-orange-50"
+                          >
+                            <RotateCcw size={15} />
+                          </button>
                         )}
                       </div>
                     </td>

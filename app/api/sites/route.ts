@@ -200,11 +200,15 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const mode = request.nextUrl.searchParams.get("mode");
+    const runawayOnly = mode === "runaway";
+
     if (process.env.ENV === "dev") {
       const devUser = getDevUserConfig();
       const sites = await loadSitesData({
         includeHidden: true,
         maxRegistrationLimit: devUser.trustLevel,
+        runawayOnly,
       });
       const tags = buildTagOptionsFromSites(sites);
       return NextResponse.json({ sites, tags });
@@ -222,6 +226,7 @@ export async function GET(request: NextRequest) {
     const sites = await loadSitesData({
       username: user.username,
       maxRegistrationLimit: user.trust_level,
+      runawayOnly,
     });
     const tags = buildTagOptionsFromSites(sites);
     return NextResponse.json({ sites, tags });

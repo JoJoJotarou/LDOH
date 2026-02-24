@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { API_ERROR_CODES } from "@/lib/constants/error-codes";
+import { SitePendingReport } from "@/lib/contracts/types/site";
 
 type ReportType = "runaway" | "fake_charity";
 
@@ -18,6 +19,8 @@ type SiteReportDialogProps = {
   siteName: string;
   onClose: () => void;
   onSubmitted: () => void;
+  viewOnly?: boolean;
+  pendingReport?: SitePendingReport;
 };
 
 export function SiteReportDialog({
@@ -26,6 +29,8 @@ export function SiteReportDialog({
   siteName,
   onClose,
   onSubmitted,
+  viewOnly = false,
+  pendingReport,
 }: SiteReportDialogProps) {
   const [reportType, setReportType] = useState<ReportType>("fake_charity");
   const [reason, setReason] = useState("");
@@ -48,6 +53,8 @@ export function SiteReportDialog({
       if (!res.ok) {
         if (data.code === API_ERROR_CODES.REPORT_DUPLICATE) {
           setError("你已提交过该类型报告，请勿重复提交");
+        } else if (data.code === API_ERROR_CODES.REPORT_PENDING_EXISTS) {
+          setError("该类型报告已在处理中，暂不接受新的报告");
         } else if (res.status === 401) {
           setError("请先登录后再报告");
         } else {
@@ -71,6 +78,8 @@ export function SiteReportDialog({
     onClose();
   };
 
+  const reportTypeLabel = pendingReport?.reportType === "runaway" ? "跑路（关站）" : "伪公益站点";
+
   return (
     <AnimatePresence>
       {open && (
@@ -93,7 +102,7 @@ export function SiteReportDialog({
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-semibold text-brand-text">
-                  报告站点
+                  {viewOnly ? "报告详情" : "报告站点"}
                 </h3>
                 <p className="mt-0.5 text-xs text-brand-muted">
                   {siteName}
@@ -110,46 +119,73 @@ export function SiteReportDialog({
             </div>
 
             <div className="space-y-3">
-              <div>
-                <p className="mb-2 text-xs text-brand-muted">报告类型</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setReportType("runaway")}
-                    className={`rounded-lg border px-3 py-2 text-sm ${
-                      reportType === "runaway"
-                        ? "border-red-300 bg-red-50 text-red-700"
-                        : "border-brand-border bg-white text-brand-text"
-                    }`}
-                  >
-                    跑路（关站）
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setReportType("fake_charity")}
-                    className={`rounded-lg border px-3 py-2 text-sm ${
-                      reportType === "fake_charity"
-                        ? "border-amber-300 bg-amber-50 text-amber-700"
-                        : "border-brand-border bg-white text-brand-text"
-                    }`}
-                  >
-                    伪公益站点
-                  </button>
+              {viewOnly ? (
+                <div className="space-y-3 rounded-lg border border-brand-border bg-slate-50 p-3 text-sm text-brand-text">
+                  <p>
+                    <span className="text-brand-muted">报告类型：</span>
+                    {reportTypeLabel}
+                  </p>
+                  <p>
+                    <span className="text-brand-muted">提交人：</span>
+                    {pendingReport?.reporterUsername || "未知"}
+                  </p>
+                  <p>
+                    <span className="text-brand-muted">提交时间：</span>
+                    {pendingReport?.createdAt
+                      ? new Date(pendingReport.createdAt).toLocaleString("zh-CN")
+                      : "未知"}
+                  </p>
+                  <div>
+                    <p className="mb-1 text-brand-muted">报告原因：</p>
+                    <p className="whitespace-pre-wrap text-xs leading-5">
+                      {pendingReport?.reason?.trim() || "暂无详情"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  maxLength={500}
-                  rows={4}
-                  placeholder="请描述报告原因..."
-                  className="w-full resize-none rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-text outline-none placeholder:text-brand-muted/50 focus:border-brand-blue/50"
-                />
-                <div className="mt-1 text-right text-xs text-brand-muted">
-                  {reason.length}/500
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div>
+                    <p className="mb-2 text-xs text-brand-muted">报告类型</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReportType("runaway")}
+                        className={`rounded-lg border px-3 py-2 text-sm ${
+                          reportType === "runaway"
+                            ? "border-amber-300 bg-amber-50 text-amber-700"
+                            : "border-brand-border bg-white text-brand-text"
+                        }`}
+                      >
+                        跑路（关站）
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setReportType("fake_charity")}
+                        className={`rounded-lg border px-3 py-2 text-sm ${
+                          reportType === "fake_charity"
+                            ? "border-amber-300 bg-amber-50 text-amber-700"
+                            : "border-brand-border bg-white text-brand-text"
+                        }`}
+                      >
+                        伪公益站点
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      maxLength={500}
+                      rows={4}
+                      placeholder="请描述报告原因..."
+                      className="w-full resize-none rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-text outline-none placeholder:text-brand-muted/50 focus:border-brand-blue/50"
+                    />
+                    <div className="mt-1 text-right text-xs text-brand-muted">
+                      {reason.length}/500
+                    </div>
+                  </div>
+                </>
+              )}
 
               {error && (
                 <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
@@ -164,16 +200,18 @@ export function SiteReportDialog({
                   onClick={handleClose}
                   disabled={submitting}
                 >
-                  取消
+                  {viewOnly ? "关闭" : "取消"}
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSubmit}
-                  disabled={submitting || !reason.trim()}
-                  className="bg-black text-white hover:bg-neutral-800"
-                >
-                  {submitting ? "提交中..." : "提交报告"}
-                </Button>
+                {!viewOnly && (
+                  <Button
+                    size="sm"
+                    onClick={handleSubmit}
+                    disabled={submitting || !reason.trim()}
+                    className="bg-black text-white hover:bg-neutral-800"
+                  >
+                    {submitting ? "提交中..." : "提交报告"}
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>

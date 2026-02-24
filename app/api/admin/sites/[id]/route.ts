@@ -42,29 +42,3 @@ export async function PATCH(
 
   return NextResponse.json({ id });
 }
-
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const admin = await getAdminUser(request.cookies);
-  if (!admin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const { id } = await context.params;
-
-  const { error } = await supabaseAdmin
-    .from("site")
-    .update({
-      deleted_at: new Date().toISOString(),
-      deleted_by: admin.userId,
-    })
-    .eq("id", id);
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ id });
-}

@@ -9,6 +9,8 @@ LDOH（Linux Do Open Hub）是一个开发信息导航平台。
 - 关键词搜索 + 标签/等级/特性筛选
 - 站点新增 / 编辑（LD OAuth，LV2 及以上）
 - 站长可隐藏自己的站点（仅本人可见）
+- 站点报告（跑路 / 伪公益 两种类型）
+- 跑路站点独立页面与站长恢复
 - 根据等级显示站点
 - 站点健康检查（HTTPS 基础连通性）
 - 更新日志
@@ -91,12 +93,21 @@ lib/contracts/           # 类型定义
 ## API（内部）
 
 - `GET /api/sites`：拉取站点与推荐标签
+  - `GET /api/sites?mode=runaway`：拉取跑路站点列表
 - `POST /api/sites`：新增站点（LV2）
 - `PATCH /api/sites/[id]`：编辑站点（LV2）
+- `POST /api/sites/[id]/report`：提交站点报告（跑路/伪公益）
+- `PATCH /api/sites/[id]/restore-runaway`：站长恢复跑路站点
 - `GET /api/sites/[id]/logs`：站点操作日志
 - `GET /api/notifications`：系统通知（有效期内、已启用）
 - `GET /api/ld/user`：当前用户信息（用于权限判断）
 - `GET /api/health/cron`：站点健康检查（cron 调用，需 `x-cron-secret`）
+
+## 站点可见性规则
+
+- 普通公益站列表仅展示：`is_active = true`、`is_runaway = false`、`is_fake_charity = false`
+- 标记为“仅站长可见”的站点，站长本人仍可见
+- 跑路站点在 `/runaway-sites` 页面集中展示
 
 ## 标签策略
 
