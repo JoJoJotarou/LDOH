@@ -804,7 +804,7 @@ export function SiteCard({
                         <Flag className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>举报</TooltipContent>
+                    <TooltipContent>报告</TooltipContent>
                   </Tooltip>
                 )}
               </TooltipProvider>
@@ -1061,7 +1061,7 @@ export function SiteCard({
                     variant="ghost"
                     onClick={() => onReport(site)}
                     className="h-8 w-8 text-muted-foreground hover:text-black"
-                    title="举报"
+                    title="报告"
                   >
                     <Flag className="h-4 w-4" />
                   </Button>

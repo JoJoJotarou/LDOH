@@ -13,7 +13,7 @@ export const API_ERROR_CODES = {
   DUPLICATE_URL: "DUPLICATE_URL",
   MISSING_FIELDS: "MISSING_FIELDS",
 
-  // 举报相关
+  // 报告相关
   REPORT_DUPLICATE: "REPORT_DUPLICATE",
 
   // 服务器错误

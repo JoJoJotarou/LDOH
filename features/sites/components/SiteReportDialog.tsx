@@ -1,5 +1,5 @@
 /**
- * Site Report Dialog - 举报站点弹窗
+ * Site Report Dialog - 报告站点弹窗
  */
 
 "use client";
@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { API_ERROR_CODES } from "@/lib/constants/error-codes";
+
+type ReportType = "runaway" | "fake_charity";
 
 type SiteReportDialogProps = {
   open: boolean;
@@ -25,6 +27,7 @@ export function SiteReportDialog({
   onClose,
   onSubmitted,
 }: SiteReportDialogProps) {
+  const [reportType, setReportType] = useState<ReportType>("fake_charity");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,14 +42,14 @@ export function SiteReportDialog({
       const res = await fetch(`/api/sites/${siteId}/report`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: trimmed }),
+        body: JSON.stringify({ reason: trimmed, reportType }),
       });
       const data = await res.json();
       if (!res.ok) {
         if (data.code === API_ERROR_CODES.REPORT_DUPLICATE) {
-          setError("你已举报过该站点，请勿重复提交");
+          setError("你已提交过该类型报告，请勿重复提交");
         } else if (res.status === 401) {
-          setError("请先登录后再举报");
+          setError("请先登录后再报告");
         } else {
           setError(data.error || "提交失败，请稍后重试");
         }
@@ -62,6 +65,7 @@ export function SiteReportDialog({
   };
 
   const handleClose = () => {
+    setReportType("fake_charity");
     setReason("");
     setError(null);
     onClose();
@@ -89,7 +93,7 @@ export function SiteReportDialog({
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-semibold text-brand-text">
-                  举报站点
+                  报告站点
                 </h3>
                 <p className="mt-0.5 text-xs text-brand-muted">
                   {siteName}
@@ -107,12 +111,39 @@ export function SiteReportDialog({
 
             <div className="space-y-3">
               <div>
+                <p className="mb-2 text-xs text-brand-muted">报告类型</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setReportType("runaway")}
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      reportType === "runaway"
+                        ? "border-red-300 bg-red-50 text-red-700"
+                        : "border-brand-border bg-white text-brand-text"
+                    }`}
+                  >
+                    跑路（关站）
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportType("fake_charity")}
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      reportType === "fake_charity"
+                        ? "border-amber-300 bg-amber-50 text-amber-700"
+                        : "border-brand-border bg-white text-brand-text"
+                    }`}
+                  >
+                    伪公益站点
+                  </button>
+                </div>
+              </div>
+              <div>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   maxLength={500}
                   rows={4}
-                  placeholder="请描述举报原因..."
+                  placeholder="请描述报告原因..."
                   className="w-full resize-none rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-text outline-none placeholder:text-brand-muted/50 focus:border-brand-blue/50"
                 />
                 <div className="mt-1 text-right text-xs text-brand-muted">
@@ -141,7 +172,7 @@ export function SiteReportDialog({
                   disabled={submitting || !reason.trim()}
                   className="bg-black text-white hover:bg-neutral-800"
                 >
-                  {submitting ? "提交中..." : "提交举报"}
+                  {submitting ? "提交中..." : "提交报告"}
                 </Button>
               </div>
             </div>

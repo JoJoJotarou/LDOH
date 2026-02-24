@@ -5,6 +5,8 @@ import { getSessionIdFromCookies } from "@/lib/auth/ld-oauth";
 import { API_ERROR_CODES } from "@/lib/constants/error-codes";
 
 const REPORT_THRESHOLD = 1;
+const VALID_REPORT_TYPES = ["runaway", "fake_charity"] as const;
+type ReportType = (typeof VALID_REPORT_TYPES)[number];
 
 export async function POST(
   request: NextRequest,
@@ -56,29 +58,37 @@ export async function POST(
     // 解析请求体
     const body = await request.json();
     const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+    const reportType = body.reportType as ReportType | undefined;
     if (!reason || reason.length > 500) {
       return NextResponse.json(
-        { error: "举报原因不能为空且不超过500字" },
+        { error: "报告原因不能为空且不超过500字" },
+        { status: 400 }
+      );
+    }
+    if (!reportType || !VALID_REPORT_TYPES.includes(reportType)) {
+      return NextResponse.json(
+        { error: "报告类型无效" },
         { status: 400 }
       );
     }
 
-    // 插入举报记录（唯一索引防重复）
+    // 插入报告记录（唯一索引防重复）
     const { error: insertError } = await supabaseAdmin
       .from("site_reports")
       .insert({
         site_id: siteId,
         reporter_id: userId,
         reporter_username: username,
+        report_type: reportType,
         reason,
       });
 
     if (insertError) {
-      // 唯一索引冲突 = 重复举报
+      // 唯一索引冲突 = 同类型重复报告
       if (insertError.code === "23505") {
         return NextResponse.json(
           {
-            error: "你已举报过该站点，请勿重复提交",
+            error: "你已提交过该类型报告，请勿重复提交",
             code: API_ERROR_CODES.REPORT_DUPLICATE,
           },
           { status: 409 }
@@ -87,17 +97,20 @@ export async function POST(
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
-    // 查询该站点 pending 举报总数，达到阈值则自动隐藏
+    // 查询该站点同类型 pending 报告总数，达到阈值则更新对应状态字段
     const { count, error: countError } = await supabaseAdmin
       .from("site_reports")
       .select("id", { count: "exact", head: true })
       .eq("site_id", siteId)
+      .eq("report_type", reportType)
       .eq("status", "pending");
 
     if (!countError && count !== null && count >= REPORT_THRESHOLD) {
+      const updateField =
+        reportType === "runaway" ? "is_runaway" : "is_fake_charity";
       await supabaseAdmin
         .from("site")
-        .update({ is_active: false })
+        .update({ [updateField]: true })
         .eq("id", siteId);
     }
 
