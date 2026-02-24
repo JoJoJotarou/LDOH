@@ -44,17 +44,17 @@ export default function AdminDashboard() {
       icon: <Eye size={20} className="text-green-500" />,
     },
     {
-      label: "仅站长可见",
-      value: data.maintainerOnlySites,
-      icon: <EyeOff size={20} className="text-amber-500" />,
-    },
-    {
       label: "已下线",
       value: data.offlineSites,
       icon: <Power size={20} className="text-red-400" />,
     },
     {
-      label: "公益站可见",
+      label: "仅站长可见",
+      value: data.maintainerOnlySites,
+      icon: <EyeOff size={20} className="text-amber-500" />,
+    },
+    {
+      label: "公开可见",
       value: data.publicVisibleSites,
       icon: <Globe size={20} className="text-emerald-500" />,
     },

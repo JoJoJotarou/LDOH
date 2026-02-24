@@ -47,7 +47,7 @@ export function Navigation({ username }: NavigationProps) {
               href="/runaway-sites"
               className="rounded-full px-3 py-1 transition hover:text-brand-text"
             >
-              公益站（🏃‍♀️）
+              公益站（跑路）
             </Link>
             <span className="h-3.5 w-px bg-brand-border/80" aria-hidden="true" />
             <Link
