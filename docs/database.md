@@ -1,185 +1,336 @@
-# 数据库结构（Supabase）
+# 数据库结构（最新）
 
-本项目使用 Supabase Postgres。以下为当前生产/开发库需要保持一致的表结构、约束与索引。
+> 说明：每张数据表均提供 3 个 Markdown 表：`fields`、`indexes`、`constraints`。
 
 ## 表：site
 
-| 字段 | 类型 | 可空 | 默认 | 说明 |
-| --- | --- | --- | --- | --- |
-| id | uuid | 否 | gen_random_uuid() | 站点主键 |
-| name | text | 否 | - | 站点名称 |
-| description | text | 是 | - | 描述 |
-| api_base_url | text | 否 | - | API Base URL（唯一） |
-| rate_limit | text | 是 | - | 速率限制 |
-| registration_limit | integer | 否 | 2 | 登记等级（0-3） |
-| supports_immersive_translation | boolean | 否 | false | 支持沉浸式翻译 |
-| supports_ldc | boolean | 否 | false | 支持 LDC |
-| supports_checkin | boolean | 否 | false | 支持签到 |
-| supports_nsfw | boolean | 否 | false | 支持 NSFW (成人内容) |
-| checkin_url | text | 是 | - | 签到地址 |
-| checkin_note | text | 是 | - | 签到说明 |
-| benefit_url | text | 是 | - | 福利站 |
-| status_url | text | 是 | - | 状态页 |
-| is_active | boolean | 否 | true | 保留字段 |
-| is_visible | boolean | 否 | true | 是否在列表展示 |
-| created_at | timestamptz | 否 | now() | 创建时间 |
-| updated_at | timestamptz | 否 | now() | 更新时间 |
-| created_by | bigint | 是 | - | 创建者（LD user_id） |
-| updated_by | bigint | 是 | - | 更新者（LD user_id） |
+### fields
 
-约束：
-- UNIQUE(api_base_url)
-- PRIMARY KEY(id)
+| 字段                           | 类型        | 可空 | 默认值            | 字段描述           |
+| ------------------------------ | ----------- | ---- | ----------------- | ------------------ |
+| id                             | uuid        | 否   | gen_random_uuid() | 站点主键ID         |
+| name                           | text        | 否   | -                 | 站点名称           |
+| description                    | text        | 是   | -                 | 站点描述           |
+| api_base_url                   | text        | 否   | -                 | 站点API基础地址    |
+| rate_limit                     | text        | 是   | -                 | 速率限制说明       |
+| registration_limit             | integer     | 否   | 2                 | 最低注册等级限制   |
+| supports_immersive_translation | boolean     | 否   | false             | 是否支持沉浸式翻译 |
+| supports_ldc                   | boolean     | 否   | false             | 是否支持LDC        |
+| supports_checkin               | boolean     | 否   | false             | 是否支持签到       |
+| supports_nsfw                  | boolean     | 否   | false             | 是否支持NSFW内容   |
+| checkin_url                    | text        | 是   | -                 | 签到地址           |
+| checkin_note                   | text        | 是   | -                 | 签到说明           |
+| benefit_url                    | text        | 是   | -                 | 福利地址           |
+| status_url                     | text        | 是   | -                 | 状态页地址         |
+| is_active                      | boolean     | 否   | true              | 是否启用           |
+| is_visible                     | boolean     | 否   | true              | 是否前台可见       |
+| created_at                     | timestamptz | 否   | now()             | 创建时间           |
+| updated_at                     | timestamptz | 否   | now()             | 更新时间           |
+| created_by                     | bigint      | 是   | -                 | 创建人用户ID       |
+| updated_by                     | bigint      | 是   | -                 | 更新人用户ID       |
+| deleted_at                     | timestamptz | 是   | -                 | 逻辑删除时间       |
+| deleted_by                     | integer     | 是   | -                 | 逻辑删除操作人ID   |
 
-索引：
-- site_api_base_url_key (UNIQUE)
-- site_pkey (UNIQUE)
+### indexes
+
+| 索引名                | 字段         | 类型          | 说明               |
+| --------------------- | ------------ | ------------- | ------------------ |
+| site_pkey             | id           | PRIMARY KEY   | 主键索引           |
+| site_api_base_url_key | api_base_url | UNIQUE        | API地址唯一索引    |
+| idx_site_deleted_at   | deleted_at   | PARTIAL INDEX | 未删除站点查询索引 |
+
+### constraints
+
+| 约束名                | 字段         | 类型        | 说明            |
+| --------------------- | ------------ | ----------- | --------------- |
+| site_pkey             | id           | PRIMARY KEY | 主键约束        |
+| site_api_base_url_key | api_base_url | UNIQUE      | API地址唯一约束 |
 
 ## 表：site_tags
 
-| 字段 | 类型 | 可空 | 默认 | 说明 |
-| --- | --- | --- | --- | --- |
-| site_id | uuid | 否 | - | 站点 ID |
-| tag_id | text | 否 | - | 标签（纯字符串） |
-| created_at | timestamptz | 否 | now() | 创建时间 |
-| created_by | bigint | 是 | - | 创建者（LD user_id） |
+### fields
 
-约束：
-- PRIMARY KEY(site_id, tag_id)
-- FOREIGN KEY(site_id) REFERENCES site(id) ON DELETE CASCADE
+| 字段       | 类型        | 可空 | 默认值 | 字段描述     |
+| ---------- | ----------- | ---- | ------ | ------------ |
+| site_id    | uuid        | 否   | -      | 站点ID       |
+| tag_id     | text        | 否   | -      | 标签标识     |
+| created_at | timestamptz | 否   | now()  | 创建时间     |
+| created_by | bigint      | 是   | -      | 创建人用户ID |
 
-索引：
-- site_tags_pkey (UNIQUE)
-- site_tags_site_id_idx
-- site_tags_tag_id_idx
+### indexes
+
+| 索引名                | 字段           | 类型        | 说明             |
+| --------------------- | -------------- | ----------- | ---------------- |
+| site_tags_pkey        | site_id,tag_id | PRIMARY KEY | 联合主键索引     |
+| site_tags_site_id_idx | site_id        | BTREE       | 站点维度查询索引 |
+| site_tags_tag_id_idx  | tag_id         | BTREE       | 标签维度查询索引 |
+
+### constraints
+
+| 约束名                 | 字段           | 类型        | 说明                     |
+| ---------------------- | -------------- | ----------- | ------------------------ |
+| site_tags_pkey         | site_id,tag_id | PRIMARY KEY | 联合主键约束             |
+| site_tags_site_id_fkey | site_id        | FOREIGN KEY | 关联 site(id) 并级联删除 |
 
 ## 表：site_maintainers
 
-| 字段 | 类型 | 可空 | 默认 | 说明 |
-| --- | --- | --- | --- | --- |
-| id | uuid | 否 | gen_random_uuid() | 主键 |
-| site_id | uuid | 否 | - | 站点 ID |
-| name | text | 否 | - | 站长显示名称 |
-| username | text | 是 | - | 站长用户名（LinuxDo username） |
-| profile_url | text | 是 | - | 站长主页链接（LinuxDo 个人页） |
-| sort_order | integer | 否 | 0 | 排序 |
-| created_at | timestamptz | 否 | now() | 创建时间 |
-| updated_at | timestamptz | 否 | now() | 更新时间 |
-| created_by | bigint | 是 | - | 创建者（LD user_id） |
-| updated_by | bigint | 是 | - | 更新者（LD user_id） |
+### fields
 
-约束：
-- PRIMARY KEY(id)
-- FOREIGN KEY(site_id) REFERENCES site(id) ON DELETE CASCADE
+| 字段        | 类型        | 可空 | 默认值            | 字段描述       |
+| ----------- | ----------- | ---- | ----------------- | -------------- |
+| id          | uuid        | 否   | gen_random_uuid() | 维护者记录主键 |
+| site_id     | uuid        | 否   | -                 | 站点ID         |
+| name        | text        | 否   | -                 | 维护者名称     |
+| username    | text        | 是   | -                 | 维护者用户名   |
+| profile_url | text        | 是   | -                 | 维护者主页地址 |
+| sort_order  | integer     | 否   | 0                 | 排序值         |
+| created_at  | timestamptz | 否   | now()             | 创建时间       |
+| updated_at  | timestamptz | 否   | now()             | 更新时间       |
+| created_by  | bigint      | 是   | -                 | 创建人用户ID   |
+| updated_by  | bigint      | 是   | -                 | 更新人用户ID   |
 
-索引：
-- site_maintainers_pkey (UNIQUE)
-- site_maintainers_site_id_idx
+### indexes
+
+| 索引名                       | 字段    | 类型        | 说明             |
+| ---------------------------- | ------- | ----------- | ---------------- |
+| site_maintainers_pkey        | id      | PRIMARY KEY | 主键索引         |
+| site_maintainers_site_id_idx | site_id | BTREE       | 站点维度查询索引 |
+
+### constraints
+
+| 约束名                        | 字段    | 类型        | 说明                     |
+| ----------------------------- | ------- | ----------- | ------------------------ |
+| site_maintainers_pkey         | id      | PRIMARY KEY | 主键约束                 |
+| site_maintainers_site_id_fkey | site_id | FOREIGN KEY | 关联 site(id) 并级联删除 |
 
 ## 表：site_extension_links
 
-| 字段 | 类型 | 可空 | 默认 | 说明 |
-| --- | --- | --- | --- | --- |
-| id | uuid | 否 | gen_random_uuid() | 主键 |
-| site_id | uuid | 否 | - | 站点 ID |
-| label | text | 否 | - | 名称 |
-| url | text | 否 | - | 链接 |
-| sort_order | integer | 否 | 0 | 排序 |
-| created_at | timestamptz | 否 | now() | 创建时间 |
-| updated_at | timestamptz | 否 | now() | 更新时间 |
-| created_by | bigint | 是 | - | 创建者（LD user_id） |
-| updated_by | bigint | 是 | - | 更新者（LD user_id） |
+### fields
 
-约束：
-- PRIMARY KEY(id)
-- FOREIGN KEY(site_id) REFERENCES site(id) ON DELETE CASCADE
+| 字段       | 类型        | 可空 | 默认值            | 字段描述     |
+| ---------- | ----------- | ---- | ----------------- | ------------ |
+| id         | uuid        | 否   | gen_random_uuid() | 扩展链接主键 |
+| site_id    | uuid        | 否   | -                 | 站点ID       |
+| label      | text        | 否   | -                 | 链接名称     |
+| url        | text        | 否   | -                 | 链接地址     |
+| sort_order | integer     | 否   | 0                 | 排序值       |
+| created_at | timestamptz | 否   | now()             | 创建时间     |
+| updated_at | timestamptz | 否   | now()             | 更新时间     |
+| created_by | bigint      | 是   | -                 | 创建人用户ID |
+| updated_by | bigint      | 是   | -                 | 更新人用户ID |
 
-索引：
-- site_extension_links_pkey (UNIQUE)
-- site_extension_links_site_id_idx
+### indexes
+
+| 索引名                           | 字段    | 类型        | 说明             |
+| -------------------------------- | ------- | ----------- | ---------------- |
+| site_extension_links_pkey        | id      | PRIMARY KEY | 主键索引         |
+| site_extension_links_site_id_idx | site_id | BTREE       | 站点维度查询索引 |
+
+### constraints
+
+| 约束名                            | 字段    | 类型        | 说明                     |
+| --------------------------------- | ------- | ----------- | ------------------------ |
+| site_extension_links_pkey         | id      | PRIMARY KEY | 主键约束                 |
+| site_extension_links_site_id_fkey | site_id | FOREIGN KEY | 关联 site(id) 并级联删除 |
 
 ## 表：site_logs
 
-| 字段 | 类型 | 可空 | 默认 | 说明 |
-| --- | --- | --- | --- | --- |
-| id | uuid | 否 | gen_random_uuid() | 日志主键 |
-| site_id | uuid | 否 | - | 站点 ID |
-| action | text | 否 | - | 操作类型（CREATE/UPDATE） |
-| actor_id | bigint | 否 | - | 操作人 LD user_id |
-| actor_username | text | 否 | - | 操作人用户名 |
-| message | text | 否 | - | 变更说明 |
-| created_at | timestamptz | 否 | now() | 创建时间 |
+### fields
 
-约束：
-- PRIMARY KEY(id)
-- FOREIGN KEY(site_id) REFERENCES site(id) ON DELETE CASCADE
+| 字段           | 类型        | 可空 | 默认值            | 字段描述     |
+| -------------- | ----------- | ---- | ----------------- | ------------ |
+| id             | uuid        | 否   | gen_random_uuid() | 日志主键     |
+| site_id        | uuid        | 否   | -                 | 站点ID       |
+| action         | text        | 否   | -                 | 操作类型     |
+| actor_id       | bigint      | 否   | -                 | 操作人用户ID |
+| actor_username | text        | 否   | -                 | 操作人用户名 |
+| message        | text        | 否   | -                 | 操作说明     |
+| created_at     | timestamptz | 否   | now()             | 创建时间     |
 
-索引：
-- site_logs_pkey (UNIQUE)
-- site_logs_site_id_idx
-- site_logs_created_at_idx
+### indexes
 
-## 表：site_health_status
+| 索引名                   | 字段            | 类型        | 说明             |
+| ------------------------ | --------------- | ----------- | ---------------- |
+| site_logs_pkey           | id              | PRIMARY KEY | 主键索引         |
+| site_logs_site_id_idx    | site_id         | BTREE       | 站点维度查询索引 |
+| site_logs_created_at_idx | created_at DESC | BTREE       | 时间倒序查询索引 |
 
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| site_id | uuid | 站点 ID |
-| status | text | 状态（up/slow/down） |
-| http_status | integer | HTTP 状态码 |
-| latency_ms | integer | 延迟（毫秒） |
-| checked_at | timestamptz | 检查时间 |
-| error | text | 错误简述 |
-| response_url | text | 最终响应 URL |
+### constraints
 
-约束：
-- PRIMARY KEY(site_id)
-- FOREIGN KEY(site_id) REFERENCES site(id) ON DELETE CASCADE
-
-## 表：auth_sessions
-
-| 字段 | 类型 | 可空 | 默认 | 说明 |
-| --- | --- | --- | --- | --- |
-| id | uuid | 否 | gen_random_uuid() | 会话 ID（写入 httpOnly cookie） |
-| access_token | text | 否 | - | 访问令牌（短期） |
-| refresh_token | text | 否 | - | 刷新令牌（长期，仅服务端保存） |
-| token_type | text | 否 | bearer | 令牌类型 |
-| access_expires_at | timestamptz | 否 | - | access_token 过期时间 |
-| session_expires_at | timestamptz | 否 | - | 会话过期时间（对齐 cookie Max-Age） |
-| user_id | bigint | 是 | - | 缓存的 LD user_id |
-| user_username | text | 是 | - | 缓存的 LD username |
-| user_trust_level | integer | 是 | - | 缓存的 LD trust_level |
-| user_fetched_at | timestamptz | 是 | - | 缓存更新时间 |
-| created_at | timestamptz | 否 | now() | 创建时间 |
-| updated_at | timestamptz | 否 | now() | 更新时间 |
-
-约束：
-- PRIMARY KEY(id)
-
-索引：
-- auth_sessions_pkey (UNIQUE)
-- auth_sessions_session_expires_at_idx
+| 约束名                 | 字段    | 类型        | 说明                     |
+| ---------------------- | ------- | ----------- | ------------------------ |
+| site_logs_pkey         | id      | PRIMARY KEY | 主键约束                 |
+| site_logs_site_id_fkey | site_id | FOREIGN KEY | 关联 site(id) 并级联删除 |
 
 ## 表：system_notifications
 
-| 字段 | 类型 | 可空 | 默认 | 说明 |
-| --- | --- | --- | --- | --- |
-| id | uuid | 否 | gen_random_uuid() | 通知主键 |
-| title | text | 否 | - | 通知标题 |
-| content | text | 否 | - | 通知内容（支持 Markdown 格式，可包含链接） |
-| min_trust_level | integer | 是 | - | 最低可见等级（为空表示所有已登录用户可见） |
-| valid_from | timestamptz | 否 | now() | 生效时间 |
-| valid_until | timestamptz | 是 | - | 失效时间（null 表示永久有效） |
-| is_active | boolean | 否 | true | 是否启用 |
-| created_at | timestamptz | 否 | now() | 创建时间 |
-| updated_at | timestamptz | 否 | now() | 更新时间 |
-| created_by | bigint | 是 | - | 创建者（LD user_id） |
-| updated_by | bigint | 是 | - | 更新者（LD user_id） |
+### fields
 
-约束：
-- PRIMARY KEY(id)
+| 字段            | 类型        | 可空 | 默认值            | 字段描述         |
+| --------------- | ----------- | ---- | ----------------- | ---------------- |
+| id              | uuid        | 否   | gen_random_uuid() | 通知主键         |
+| title           | text        | 否   | -                 | 通知标题         |
+| content         | text        | 否   | -                 | 通知内容         |
+| min_trust_level | integer     | 是   | -                 | 最低可见信任等级 |
+| valid_from      | timestamptz | 否   | now()             | 生效时间         |
+| valid_until     | timestamptz | 是   | -                 | 失效时间         |
+| is_active       | boolean     | 否   | true              | 是否启用         |
+| created_at      | timestamptz | 否   | now()             | 创建时间         |
+| updated_at      | timestamptz | 否   | now()             | 更新时间         |
+| created_by      | bigint      | 是   | -                 | 创建人用户ID     |
+| updated_by      | bigint      | 是   | -                 | 更新人用户ID     |
 
-索引：
-- system_notifications_pkey (UNIQUE)
-- system_notifications_valid_from_idx
-- system_notifications_valid_until_idx
-- system_notifications_is_active_idx
+### indexes
+
+| 索引名                               | 字段            | 类型        | 说明         |
+| ------------------------------------ | --------------- | ----------- | ------------ |
+| system_notifications_pkey            | id              | PRIMARY KEY | 主键索引     |
+| system_notifications_valid_from_idx  | valid_from DESC | BTREE       | 生效时间索引 |
+| system_notifications_valid_until_idx | valid_until     | BTREE       | 失效时间索引 |
+| system_notifications_is_active_idx   | is_active       | BTREE       | 启用状态索引 |
+
+### constraints
+
+| 约束名                    | 字段 | 类型        | 说明     |
+| ------------------------- | ---- | ----------- | -------- |
+| system_notifications_pkey | id   | PRIMARY KEY | 主键约束 |
+
+## 表：site_health_status
+
+### fields
+
+| 字段         | 类型        | 可空 | 默认值 | 字段描述       |
+| ------------ | ----------- | ---- | ------ | -------------- |
+| site_id      | uuid        | 否   | -      | 站点ID（主键） |
+| status       | text        | 否   | -      | 健康状态       |
+| http_status  | integer     | 是   | -      | HTTP状态码     |
+| latency_ms   | integer     | 是   | -      | 延迟毫秒值     |
+| checked_at   | timestamptz | 否   | now()  | 最近检查时间   |
+| error        | text        | 是   | -      | 错误信息       |
+| response_url | text        | 是   | -      | 最终响应地址   |
+
+### indexes
+
+| 索引名                  | 字段    | 类型        | 说明     |
+| ----------------------- | ------- | ----------- | -------- |
+| site_health_status_pkey | site_id | PRIMARY KEY | 主键索引 |
+
+### constraints
+
+| 约束名                          | 字段    | 类型        | 说明                     |
+| ------------------------------- | ------- | ----------- | ------------------------ |
+| site_health_status_pkey         | site_id | PRIMARY KEY | 主键约束                 |
+| site_health_status_site_id_fkey | site_id | FOREIGN KEY | 关联 site(id) 并级联删除 |
+| site_health_status_status_check | status  | CHECK       | 仅允许 up/slow/down      |
+
+## 表：auth_sessions
+
+### fields
+
+| 字段               | 类型        | 可空 | 默认值            | 字段描述         |
+| ------------------ | ----------- | ---- | ----------------- | ---------------- |
+| id                 | uuid        | 否   | gen_random_uuid() | 会话主键ID       |
+| access_token       | text        | 否   | -                 | 访问令牌         |
+| refresh_token      | text        | 否   | -                 | 刷新令牌         |
+| token_type         | text        | 否   | bearer            | 令牌类型         |
+| access_expires_at  | timestamptz | 否   | -                 | 访问令牌过期时间 |
+| session_expires_at | timestamptz | 否   | -                 | 会话过期时间     |
+| user_id            | bigint      | 是   | -                 | 用户ID           |
+| user_username      | text        | 是   | -                 | 用户名           |
+| user_trust_level   | integer     | 是   | -                 | 用户信任等级     |
+| user_fetched_at    | timestamptz | 是   | -                 | 用户缓存抓取时间 |
+| created_at         | timestamptz | 否   | now()             | 创建时间         |
+| updated_at         | timestamptz | 否   | now()             | 更新时间         |
+
+### indexes
+
+| 索引名                               | 字段               | 类型        | 说明             |
+| ------------------------------------ | ------------------ | ----------- | ---------------- |
+| auth_sessions_pkey                   | id                 | PRIMARY KEY | 主键索引         |
+| auth_sessions_session_expires_at_idx | session_expires_at | BTREE       | 会话过期查询索引 |
+
+### constraints
+
+| 约束名             | 字段 | 类型        | 说明     |
+| ------------------ | ---- | ----------- | -------- |
+| auth_sessions_pkey | id   | PRIMARY KEY | 主键约束 |
+
+## 表：admin_users
+
+### fields
+
+| 字段       | 类型        | 可空 | 默认值            | 字段描述       |
+| ---------- | ----------- | ---- | ----------------- | -------------- |
+| id         | uuid        | 否   | gen_random_uuid() | 管理员记录主键 |
+| user_id    | integer     | 否   | -                 | 管理员用户ID   |
+| role       | text        | 否   | admin             | 管理员角色     |
+| created_at | timestamptz | 否   | now()             | 创建时间       |
+
+### indexes
+
+| 索引名                  | 字段    | 类型        | 说明               |
+| ----------------------- | ------- | ----------- | ------------------ |
+| admin_users_pkey        | id      | PRIMARY KEY | 主键索引           |
+| admin_users_user_id_key | user_id | UNIQUE      | 管理员用户唯一索引 |
+
+### constraints
+
+| 约束名                  | 字段    | 类型        | 说明                     |
+| ----------------------- | ------- | ----------- | ------------------------ |
+| admin_users_pkey        | id      | PRIMARY KEY | 主键约束                 |
+| admin_users_user_id_key | user_id | UNIQUE      | 用户唯一约束             |
+| admin_users_role_check  | role    | CHECK       | 仅允许 admin/super_admin |
+
+## 表：site_reports
+
+### fields
+
+| 字段              | 类型        | 可空 | 默认值            | 字段描述     |
+| ----------------- | ----------- | ---- | ----------------- | ------------ |
+| id                | uuid        | 否   | gen_random_uuid() | 举报记录主键 |
+| site_id           | uuid        | 否   | -                 | 被举报站点ID |
+| reporter_id       | integer     | 否   | -                 | 举报人用户ID |
+| reporter_username | text        | 否   | ''                | 举报人用户名 |
+| reason            | text        | 否   | ''                | 举报原因     |
+| status            | text        | 否   | pending           | 举报状态     |
+| created_at        | timestamptz | 否   | now()             | 创建时间     |
+| reviewed_at       | timestamptz | 是   | -                 | 审核时间     |
+| reviewed_by       | integer     | 是   | -                 | 审核人用户ID |
+
+### indexes
+
+| 索引名                          | 字段                | 类型           | 说明                     |
+| ------------------------------- | ------------------- | -------------- | ------------------------ |
+| site_reports_pkey               | id                  | PRIMARY KEY    | 主键索引                 |
+| idx_site_reports_unique_pending | site_id,reporter_id | PARTIAL UNIQUE | 同站点同用户仅1条pending |
+| idx_site_reports_site_id        | site_id             | BTREE          | 站点维度查询索引         |
+| idx_site_reports_status         | status              | PARTIAL INDEX  | pending状态查询索引      |
+
+### constraints
+
+| 约束名                    | 字段    | 类型        | 说明                              |
+| ------------------------- | ------- | ----------- | --------------------------------- |
+| site_reports_pkey         | id      | PRIMARY KEY | 主键约束                          |
+| site_reports_site_id_fkey | site_id | FOREIGN KEY | 关联 site(id) 并级联删除          |
+| site_reports_status_check | status  | CHECK       | 仅允许 pending/reviewed/dismissed |
+
+## 表：system_settings
+
+### fields
+
+| 字段  | 类型 | 可空 | 默认值 | 字段描述 |
+| ----- | ---- | ---- | ------ | -------- |
+| key   | text | 否   | -      | 配置键   |
+| value | text | 否   | ''     | 配置值   |
+
+### indexes
+
+| 索引名               | 字段 | 类型        | 说明     |
+| -------------------- | ---- | ----------- | -------- |
+| system_settings_pkey | key  | PRIMARY KEY | 主键索引 |
+
+### constraints
+
+| 约束名               | 字段 | 类型        | 说明     |
+| -------------------- | ---- | ----------- | -------- |
+| system_settings_pkey | key  | PRIMARY KEY | 主键约束 |
