@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.site (
   is_active boolean NOT NULL DEFAULT true,
   is_runaway boolean NOT NULL DEFAULT false,
   is_fake_charity boolean NOT NULL DEFAULT false,
-  is_only_maintainer_visible boolean NOT NULL DEFAULT true,
+  is_only_maintainer_visible boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   created_by bigint,
@@ -405,7 +405,7 @@ BEGIN
     p_benefit_url,
     p_rate_limit,
     p_status_url,
-    COALESCE(p_is_only_maintainer_visible, true),
+    COALESCE(p_is_only_maintainer_visible, false),
     p_created_by,
     p_created_by
   )

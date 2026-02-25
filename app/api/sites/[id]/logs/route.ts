@@ -42,7 +42,7 @@ export async function GET(
 
       const isAllowedByLevel =
         Boolean(siteResponse.data.is_active) &&
-        Boolean(siteResponse.data.is_only_maintainer_visible) &&
+        !Boolean(siteResponse.data.is_only_maintainer_visible) &&
         (siteResponse.data.registration_limit ?? 0) <= user.trust_level;
 
       if (!isAllowedByLevel) {

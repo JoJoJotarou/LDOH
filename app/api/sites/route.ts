@@ -40,7 +40,7 @@ type SitePayload = {
   statusUrl?: string;
   maintainers: MaintainerPayload[];
   extensionLinks: ExtensionPayload[];
-  isVisible?: boolean;
+  isOnlyMaintainerVisible?: boolean;
 };
 
 function normalizeString(value?: string | null) {
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
         p_benefit_url: normalizeString(payload.benefitUrl) || null,
         p_rate_limit: normalizeString(payload.rateLimit) || null,
         p_status_url: normalizeString(payload.statusUrl) || null,
-        p_is_only_maintainer_visible: payload.isVisible ?? true,
+        p_is_only_maintainer_visible: payload.isOnlyMaintainerVisible ?? false,
         p_actor_id: actorId,
         p_actor_username: actorUsername,
         p_created_by: createdBy,

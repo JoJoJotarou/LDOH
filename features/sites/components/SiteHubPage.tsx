@@ -172,7 +172,7 @@ export function SiteHubPage({
 
   const filteredSites = useMemo(() => {
     const visibleSites = sites.filter(
-      (site) => site.isVisible !== false || isSiteMaintainer(site)
+      (site) => !site.isOnlyMaintainerVisible || isSiteMaintainer(site)
     );
     const filters: FilterOptions = {
       searchKeyword: searchQuery,
@@ -261,7 +261,8 @@ export function SiteHubPage({
     const nextPayload = { ...payload };
     if (editorMode === "edit" && editingSite) {
       if (!isSiteMaintainer(editingSite)) {
-        delete (nextPayload as { isVisible?: boolean }).isVisible;
+        delete (nextPayload as { isOnlyMaintainerVisible?: boolean })
+          .isOnlyMaintainerVisible;
         delete (nextPayload as { description?: string }).description;
       }
     }

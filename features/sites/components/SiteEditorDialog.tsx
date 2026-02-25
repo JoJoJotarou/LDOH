@@ -52,7 +52,7 @@ type SiteFormData = {
   statusUrl: string;
   maintainers: MaintainerForm[];
   extensionLinks: ExtensionForm[];
-  isVisible: boolean;
+  isOnlyMaintainerVisible: boolean;
 };
 
 type SiteEditorDialogProps = {
@@ -83,7 +83,7 @@ const emptyForm: SiteFormData = {
   statusUrl: "",
   maintainers: [{ name: "", profileUrl: "", username: "" }],
   extensionLinks: [],
-  isVisible: true,
+  isOnlyMaintainerVisible: false,
 };
 
 type TabType = "basic" | "features" | "maintainers";
@@ -147,7 +147,7 @@ export function SiteEditorDialog({
             label: link.label || "",
             url: link.url || "",
           })) || [],
-        isVisible: site.isVisible !== false,
+        isOnlyMaintainerVisible: Boolean(site.isOnlyMaintainerVisible),
       });
       setError(null);
       setTagInput("");
@@ -555,12 +555,12 @@ export function SiteEditorDialog({
                       />
                       {mode === "edit" && canEditVisibility && (
                         <ToggleCard
-                          checked={!form.isVisible}
+                          checked={form.isOnlyMaintainerVisible}
                           onChange={(c) =>
-                            setForm((p) => ({ ...p, isVisible: !c }))
+                            setForm((p) => ({ ...p, isOnlyMaintainerVisible: c }))
                           }
-                          title="隐藏站点"
-                          description="在列表中隐藏此站点 (仅维护者可见)"
+                          title="仅站长可见"
+                          description="开启后该站点仅维护者本人可见"
                           variant="danger"
                         />
                       )}

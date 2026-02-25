@@ -111,10 +111,10 @@ async function loadSitesFromSupabase(options?: {
     // no filter on visibility
   } else if (options?.includeIds && options.includeIds.length > 0) {
     siteQuery = siteQuery.or(
-      `is_only_maintainer_visible.eq.true,id.in.(${options.includeIds.join(",")})`
+      `is_only_maintainer_visible.eq.false,id.in.(${options.includeIds.join(",")})`
     );
   } else {
-    siteQuery = siteQuery.eq("is_only_maintainer_visible", true);
+    siteQuery = siteQuery.eq("is_only_maintainer_visible", false);
   }
   if (options?.runawayOnly) {
     siteQuery = siteQuery.eq("is_runaway", true);
@@ -296,7 +296,7 @@ async function loadSitesFromSupabase(options?: {
     rateLimit: site.rate_limit || "",
     statusUrl: site.status_url || "",
     extensionLinks: extensionBySite.get(site.id) ?? [],
-    isVisible: site.is_only_maintainer_visible ?? true,
+    isOnlyMaintainerVisible: site.is_only_maintainer_visible ?? false,
     isRunaway: Boolean(site.is_runaway),
     isFakeCharity: Boolean(site.is_fake_charity),
     hasPendingReport: pendingReportSites.has(site.id),

@@ -28,11 +28,15 @@ export async function GET() {
     const sites = sitesRes.data ?? [];
     const active = sites.filter((s) => s.is_active);
     const offline = sites.filter((s) => !s.is_active);
-    const maintainerOnly = active.filter((s) => !s.is_only_maintainer_visible);
+    const maintainerOnly = active.filter((s) => s.is_only_maintainer_visible);
     const runaway = sites.filter((s) => s.is_runaway);
     const fakeCharity = sites.filter((s) => s.is_fake_charity);
     const publicVisible = sites.filter(
-      (s) => s.is_active && !s.is_runaway && !s.is_fake_charity
+      (s) =>
+        s.is_active &&
+        !s.is_only_maintainer_visible &&
+        !s.is_runaway &&
+        !s.is_fake_charity
     );
 
     const pendingReports = reportsRes.data ?? [];

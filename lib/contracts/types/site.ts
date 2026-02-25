@@ -88,8 +88,8 @@ export interface Site {
   statusUrl?: string;
   /** 更多扩展链接 (可选) */
   extensionLinks?: ExtensionLink[];
-  /** 是否展示在站点列表 */
-  isVisible?: boolean;
+  /** 是否仅站长可见 */
+  isOnlyMaintainerVisible?: boolean;
   /** 是否跑路（关站） */
   isRunaway?: boolean;
   /** 是否伪公益站点 */

@@ -39,7 +39,7 @@ type SitePayload = {
   statusUrl?: string;
   maintainers: MaintainerPayload[];
   extensionLinks: ExtensionPayload[];
-  isVisible?: boolean;
+  isOnlyMaintainerVisible?: boolean;
   updatedAt?: string;
 };
 
@@ -207,7 +207,7 @@ export async function PATCH(
         ? normalizedCurrentDescription
         : normalizeString(payload.description);
 
-    if (payload.isVisible !== undefined && !isMaintainer) {
+    if (payload.isOnlyMaintainerVisible !== undefined && !isMaintainer) {
       return NextResponse.json<ApiErrorResponse>(
         {
           error: "Not allowed to change visibility",
@@ -338,8 +338,12 @@ export async function PATCH(
       normalizeString(currentSite.status_url || ""),
       normalizeString(payload.statusUrl)
     );
-    if (payload.isVisible !== undefined) {
-      pushChange("展示", Boolean(currentSite.is_only_maintainer_visible), Boolean(payload.isVisible));
+    if (payload.isOnlyMaintainerVisible !== undefined) {
+      pushChange(
+        "仅站长可见",
+        Boolean(currentSite.is_only_maintainer_visible),
+        Boolean(payload.isOnlyMaintainerVisible)
+      );
     }
     if (currentTags.join("|") !== nextTags.join("|")) {
       changes.push(`标签: ${formatList(currentTags)} -> ${formatList(nextTags)}`);
@@ -377,9 +381,9 @@ export async function PATCH(
         rate_limit: normalizeString(payload.rateLimit) || null,
         status_url: normalizeString(payload.statusUrl) || null,
         is_only_maintainer_visible:
-          payload.isVisible === undefined
+          payload.isOnlyMaintainerVisible === undefined
             ? undefined
-            : Boolean(payload.isVisible),
+            : Boolean(payload.isOnlyMaintainerVisible),
         updated_by: actorId > 0 ? actorId : null,
         updated_at: new Date().toISOString(),
       })
