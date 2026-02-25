@@ -19,7 +19,7 @@ export async function PATCH(
     "name", "description", "registration_limit", "api_base_url",
     "supports_immersive_translation", "supports_ldc", "supports_checkin",
     "supports_nsfw", "checkin_url", "checkin_note", "benefit_url",
-    "rate_limit", "status_url", "is_only_maintainer_visible", "is_active",
+    "rate_limit", "status_url", "requires_invite_code", "is_only_maintainer_visible", "is_active",
     "is_runaway", "is_fake_charity",
   ];
 

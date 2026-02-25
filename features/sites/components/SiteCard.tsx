@@ -494,6 +494,16 @@ export function SiteCard({
                     </TooltipTrigger>
                     <TooltipContent>等级要求</TooltipContent>
                   </Tooltip>
+                  {site.requiresInviteCode && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0 text-[9px] font-semibold text-violet-700 whitespace-nowrap">
+                          邀请码
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>注册需要邀请码</TooltipContent>
+                    </Tooltip>
+                  )}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Badge
@@ -991,6 +1001,18 @@ export function SiteCard({
                       <TooltipContent>等级要求</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+                  {site.requiresInviteCode && (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0 text-[9px] font-semibold text-violet-700 whitespace-nowrap">
+                            邀请码
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>注册需要邀请码</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   <TooltipProvider delayDuration={0}>
                     <Tooltip>
                       <TooltipTrigger asChild>

@@ -26,6 +26,7 @@
 | is_runaway                     | boolean     | 否   | false             | 是否跑路（关站）   |
 | is_fake_charity                | boolean     | 否   | false             | 是否伪公益站点     |
 | is_only_maintainer_visible     | boolean     | 否   | false             | 是否前台仅站长可见 |
+| requires_invite_code           | boolean     | 否   | false             | 注册时是否需要邀请码 |
 | created_at                     | timestamptz | 否   | now()             | 创建时间           |
 | updated_at                     | timestamptz | 否   | now()             | 更新时间           |
 | created_by                     | bigint      | 是   | -                 | 创建人用户ID       |

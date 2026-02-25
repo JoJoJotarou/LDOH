@@ -52,6 +52,7 @@ type SiteFormData = {
   statusUrl: string;
   maintainers: MaintainerForm[];
   extensionLinks: ExtensionForm[];
+  requiresInviteCode: boolean;
   isOnlyMaintainerVisible: boolean;
 };
 
@@ -83,6 +84,7 @@ const emptyForm: SiteFormData = {
   statusUrl: "",
   maintainers: [{ name: "", profileUrl: "", username: "" }],
   extensionLinks: [],
+  requiresInviteCode: false,
   isOnlyMaintainerVisible: false,
 };
 
@@ -147,6 +149,7 @@ export function SiteEditorDialog({
             label: link.label || "",
             url: link.url || "",
           })) || [],
+        requiresInviteCode: Boolean(site.requiresInviteCode),
         isOnlyMaintainerVisible: Boolean(site.isOnlyMaintainerVisible),
       });
       setError(null);
@@ -435,6 +438,15 @@ export function SiteEditorDialog({
                       />
                     </div>
                   </div>
+
+                  <ToggleCard
+                    checked={form.requiresInviteCode}
+                    onChange={(c) =>
+                      setForm((p) => ({ ...p, requiresInviteCode: c }))
+                    }
+                    title="注册时是否需要邀请码"
+                    description="注册时是否需要邀请码"
+                  />
 
                   <div>
                     <label className="text-xs font-semibold text-brand-muted uppercase tracking-wider">

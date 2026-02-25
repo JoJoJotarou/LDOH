@@ -88,6 +88,8 @@ export interface Site {
   statusUrl?: string;
   /** 更多扩展链接 (可选) */
   extensionLinks?: ExtensionLink[];
+  /** 注册是否需要邀请码 */
+  requiresInviteCode?: boolean;
   /** 是否仅站长可见 */
   isOnlyMaintainerVisible?: boolean;
   /** 是否跑路（关站） */

@@ -27,6 +27,7 @@ type SupabaseSite = {
   rate_limit: string | null;
   status_url: string | null;
   is_only_maintainer_visible: boolean | null;
+  requires_invite_code: boolean | null;
   is_runaway: boolean | null;
   is_fake_charity: boolean | null;
   updated_at: string | null;
@@ -297,6 +298,7 @@ async function loadSitesFromSupabase(options?: {
     statusUrl: site.status_url || "",
     extensionLinks: extensionBySite.get(site.id) ?? [],
     isOnlyMaintainerVisible: site.is_only_maintainer_visible ?? false,
+    requiresInviteCode: Boolean(site.requires_invite_code),
     isRunaway: Boolean(site.is_runaway),
     isFakeCharity: Boolean(site.is_fake_charity),
     hasPendingReport: pendingReportSites.has(site.id),

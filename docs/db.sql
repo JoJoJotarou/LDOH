@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS public.site (
   is_runaway boolean NOT NULL DEFAULT false,
   is_fake_charity boolean NOT NULL DEFAULT false,
   is_only_maintainer_visible boolean NOT NULL DEFAULT false,
+  requires_invite_code boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   created_by bigint,
@@ -206,6 +207,7 @@ COMMENT ON COLUMN public.site.is_active IS '是否启用';
 COMMENT ON COLUMN public.site.is_runaway IS '是否跑路（关站）';
 COMMENT ON COLUMN public.site.is_fake_charity IS '是否伪公益站点';
 COMMENT ON COLUMN public.site.is_only_maintainer_visible IS '是否前台仅站长可见';
+COMMENT ON COLUMN public.site.requires_invite_code IS '注册时是否需要邀请码';
 COMMENT ON COLUMN public.site.created_at IS '创建时间';
 COMMENT ON COLUMN public.site.updated_at IS '更新时间';
 COMMENT ON COLUMN public.site.created_by IS '创建人用户ID';
@@ -338,6 +340,7 @@ DROP FUNCTION IF EXISTS public.create_site_with_notification(
   text,
   text,
   boolean,
+  boolean,
   bigint,
   text,
   bigint,
@@ -360,6 +363,7 @@ CREATE FUNCTION public.create_site_with_notification(
   p_benefit_url text,
   p_rate_limit text,
   p_status_url text,
+  p_requires_invite_code boolean,
   p_is_only_maintainer_visible boolean,
   p_actor_id bigint,
   p_actor_username text,
@@ -388,6 +392,7 @@ BEGIN
     benefit_url,
     rate_limit,
     status_url,
+    requires_invite_code,
     is_only_maintainer_visible,
     created_by,
     updated_by
@@ -405,6 +410,7 @@ BEGIN
     p_benefit_url,
     p_rate_limit,
     p_status_url,
+    COALESCE(p_requires_invite_code, false),
     COALESCE(p_is_only_maintainer_visible, false),
     p_created_by,
     p_created_by

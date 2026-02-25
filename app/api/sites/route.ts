@@ -40,6 +40,7 @@ type SitePayload = {
   statusUrl?: string;
   maintainers: MaintainerPayload[];
   extensionLinks: ExtensionPayload[];
+  requiresInviteCode?: boolean;
   isOnlyMaintainerVisible?: boolean;
 };
 
@@ -174,6 +175,7 @@ export async function POST(request: NextRequest) {
         p_benefit_url: normalizeString(payload.benefitUrl) || null,
         p_rate_limit: normalizeString(payload.rateLimit) || null,
         p_status_url: normalizeString(payload.statusUrl) || null,
+        p_requires_invite_code: Boolean(payload.requiresInviteCode),
         p_is_only_maintainer_visible: payload.isOnlyMaintainerVisible ?? false,
         p_actor_id: actorId,
         p_actor_username: actorUsername,

@@ -39,6 +39,7 @@ type SitePayload = {
   statusUrl?: string;
   maintainers: MaintainerPayload[];
   extensionLinks: ExtensionPayload[];
+  requiresInviteCode?: boolean;
   isOnlyMaintainerVisible?: boolean;
   updatedAt?: string;
 };
@@ -141,7 +142,7 @@ export async function PATCH(
         supabaseAdmin
           .from("site")
           .select(
-            "name,description,registration_limit,api_base_url,supports_immersive_translation,supports_ldc,supports_checkin,supports_nsfw,checkin_url,checkin_note,benefit_url,rate_limit,status_url,is_only_maintainer_visible,updated_at"
+            "name,description,registration_limit,api_base_url,supports_immersive_translation,supports_ldc,supports_checkin,supports_nsfw,checkin_url,checkin_note,benefit_url,rate_limit,status_url,requires_invite_code,is_only_maintainer_visible,updated_at"
           )
           .eq("id", siteId)
           .single(),
@@ -345,6 +346,11 @@ export async function PATCH(
         Boolean(payload.isOnlyMaintainerVisible)
       );
     }
+    pushChange(
+      "邀请码",
+      Boolean(currentSite.requires_invite_code),
+      Boolean(payload.requiresInviteCode)
+    );
     if (currentTags.join("|") !== nextTags.join("|")) {
       changes.push(`标签: ${formatList(currentTags)} -> ${formatList(nextTags)}`);
     }
@@ -380,6 +386,7 @@ export async function PATCH(
         benefit_url: normalizeString(payload.benefitUrl) || null,
         rate_limit: normalizeString(payload.rateLimit) || null,
         status_url: normalizeString(payload.statusUrl) || null,
+        requires_invite_code: Boolean(payload.requiresInviteCode),
         is_only_maintainer_visible:
           payload.isOnlyMaintainerVisible === undefined
             ? undefined
