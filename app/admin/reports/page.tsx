@@ -12,10 +12,18 @@ import {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
+type ReportMaintainer = {
+  name: string;
+  username: string | null;
+  profile_url: string | null;
+};
+
 type ReportRow = {
   id: string;
   site_id: string;
   site_name: string;
+  site_api_base_url: string | null;
+  site_maintainers: ReportMaintainer[];
   reporter_id: number;
   reporter_username: string;
   report_type: "runaway" | "fake_charity";
@@ -136,6 +144,8 @@ export default function AdminReportsPage() {
           <thead>
             <tr className="border-b border-neutral-100 text-left text-xs text-neutral-500">
               <th className="px-4 py-3 font-medium">站点名称</th>
+              <th className="px-4 py-3 font-medium">站点地址</th>
+              <th className="px-4 py-3 font-medium">维护者</th>
               <th className="px-4 py-3 font-medium">报告人</th>
               <th className="px-4 py-3 font-medium">类型</th>
               <th className="px-4 py-3 font-medium">报告原因</th>
@@ -148,7 +158,7 @@ export default function AdminReportsPage() {
             {isLoading ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={9}
                   className="px-4 py-8 text-center text-neutral-400"
                 >
                   加载中...
@@ -157,7 +167,7 @@ export default function AdminReportsPage() {
             ) : !data?.items?.length ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={9}
                   className="px-4 py-8 text-center text-neutral-400"
                 >
                   暂无数据
@@ -176,6 +186,48 @@ export default function AdminReportsPage() {
                     className="border-b border-neutral-50"
                   >
                     <td className="px-4 py-3">{report.site_name}</td>
+                    <td className="max-w-[200px] truncate px-4 py-3 text-neutral-500">
+                      {report.site_api_base_url ? (
+                        <a
+                          href={report.site_api_base_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-blue-600 hover:underline"
+                        >
+                          {report.site_api_base_url}
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {report.site_maintainers?.length ? (
+                          report.site_maintainers.map((m, i) =>
+                            m.profile_url ? (
+                              <a
+                                key={i}
+                                href={m.profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                              >
+                                {m.name}
+                              </a>
+                            ) : (
+                              <span
+                                key={i}
+                                className="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600"
+                              >
+                                {m.name}
+                              </span>
+                            )
+                          )
+                        ) : (
+                          <span className="text-neutral-300">-</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-neutral-500">
                       {report.reporter_username || `#${report.reporter_id}`}
                     </td>

@@ -11,12 +11,23 @@ export async function GET(request: NextRequest) {
 
     let query = supabaseAdmin
       .from("site")
-      .select("id,name,description,api_base_url,is_only_maintainer_visible,is_active,is_runaway,is_fake_charity,updated_at,registration_limit", { count: "exact" });
+      .select("id,name,description,api_base_url,is_only_maintainer_visible,is_active,is_runaway,is_fake_charity,updated_at,registration_limit,site_maintainers(name,username,profile_url)", { count: "exact" });
 
     if (search) {
       query = query.or(
         `name.ilike.%${search}%,api_base_url.ilike.%${search}%`
       );
+    }
+
+    const status = url.searchParams.get("status") || "";
+    if (status === "active") {
+      query = query.eq("is_active", true);
+    } else if (status === "inactive") {
+      query = query.eq("is_active", false);
+    } else if (status === "runaway") {
+      query = query.eq("is_runaway", true);
+    } else if (status === "fake_charity") {
+      query = query.eq("is_fake_charity", true);
     }
 
     query = query

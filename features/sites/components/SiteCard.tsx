@@ -336,9 +336,11 @@ export function SiteCard({
         transition={{ duration: 0.2 }}
       >
         <Card
-          className={`group relative overflow-hidden border border-brand-border bg-white transition-all duration-200 hover:border-brand-blue/30 hover:shadow-md ${
-            isHidden ? "opacity-60 grayscale" : ""
-          }`}
+          className={`group relative overflow-hidden border bg-white transition-all duration-200 hover:shadow-md ${
+            isReported
+              ? "border-red-300 bg-red-50/30 hover:border-red-400"
+              : "border-brand-border hover:border-brand-blue/30"
+          } ${isHidden ? "opacity-60 grayscale" : ""}`}
         >
           <div className="flex items-center gap-4 p-4">
             {/* 站长头像 */}
@@ -480,6 +482,12 @@ export function SiteCard({
                     site.name
                   )}
                 </h3>
+                {isReported && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0 text-[9px] font-semibold text-red-600 whitespace-nowrap">
+                    <Flag className="h-2.5 w-2.5" />
+                    待审核
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
@@ -849,9 +857,13 @@ export function SiteCard({
       onHoverEnd={() => setIsHovered(false)}
     >
       <Card
-        className={`group relative h-full min-h-[280px] overflow-hidden border border-brand-border bg-white transition-all duration-300 ${
-          isCardActive ? "border-brand-blue/30 shadow-lg" : ""
-        } ${isHidden ? "opacity-60 grayscale" : ""}`}
+        className={`group relative h-full min-h-[280px] overflow-hidden border bg-white transition-all duration-300 ${
+          isReported
+            ? "border-red-300 bg-red-50/30"
+            : "border-brand-border"
+        } ${
+          isCardActive && !isReported ? "border-brand-blue/30 shadow-lg" : ""
+        } ${isCardActive && isReported ? "border-red-400 shadow-lg" : ""} ${isHidden ? "opacity-60 grayscale" : ""}`}
       >
         <div className="flex h-full flex-col gap-3 p-6">
           {/* Header */}
@@ -987,6 +999,12 @@ export function SiteCard({
                       )}
                     </h3>
                   </div>
+                  {isReported && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0 text-[9px] font-semibold text-red-600 whitespace-nowrap shrink-0">
+                      <Flag className="h-2.5 w-2.5" />
+                      待审核
+                    </span>
+                  )}
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
                   <TooltipProvider delayDuration={0}>

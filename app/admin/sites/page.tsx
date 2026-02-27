@@ -14,6 +14,12 @@ import {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
+type SiteMaintainer = {
+  name: string;
+  username: string | null;
+  profile_url: string | null;
+};
+
 type SiteRow = {
   id: string;
   name: string;
@@ -25,6 +31,7 @@ type SiteRow = {
   is_fake_charity: boolean | null;
   updated_at: string | null;
   registration_limit: number | null;
+  site_maintainers: SiteMaintainer[];
 };
 
 type SitesResponse = {
@@ -37,12 +44,14 @@ type SitesResponse = {
 export default function AdminSitesPage() {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   const queryParams = new URLSearchParams();
   queryParams.set("page", String(page));
   if (search) queryParams.set("search", search);
+  if (status) queryParams.set("status", status);
 
   const { data, isLoading, mutate } = useSWR<SitesResponse>(
     `/api/admin/sites?${queryParams}`,
@@ -136,6 +145,20 @@ export default function AdminSitesPage() {
             className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-neutral-400"
           />
         </div>
+        <select
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            setPage(1);
+          }}
+          className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-400"
+        >
+          <option value="">全部状态</option>
+          <option value="active">已上线</option>
+          <option value="inactive">已下线</option>
+          <option value="runaway">跑路</option>
+          <option value="fake_charity">伪公益</option>
+        </select>
         <button
           onClick={handleSearch}
           className="rounded-lg bg-neutral-900 px-4 py-2 text-sm text-white hover:bg-neutral-800"
@@ -150,6 +173,7 @@ export default function AdminSitesPage() {
             <tr className="border-b border-neutral-100 text-left text-xs text-neutral-500">
               <th className="px-4 py-3 font-medium">站点名称</th>
               <th className="px-4 py-3 font-medium">API Base URL</th>
+              <th className="px-4 py-3 font-medium">维护者</th>
               <th className="px-4 py-3 font-medium">等级</th>
               <th className="px-4 py-3 font-medium">状态</th>
               <th className="px-4 py-3 font-medium">更新时间</th>
@@ -160,7 +184,7 @@ export default function AdminSitesPage() {
             {isLoading ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 py-8 text-center text-neutral-400"
                 >
                   加载中...
@@ -169,7 +193,7 @@ export default function AdminSitesPage() {
             ) : !(data?.sites?.length) ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 py-8 text-center text-neutral-400"
                 >
                   暂无数据
@@ -188,6 +212,34 @@ export default function AdminSitesPage() {
                     </td>
                     <td className="max-w-[200px] truncate px-4 py-3 text-neutral-500">
                       {site.api_base_url}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {site.site_maintainers?.length ? (
+                          site.site_maintainers.map((m, i) =>
+                            m.profile_url ? (
+                              <a
+                                key={i}
+                                href={m.profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                              >
+                                {m.name}
+                              </a>
+                            ) : (
+                              <span
+                                key={i}
+                                className="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600"
+                              >
+                                {m.name}
+                              </span>
+                            )
+                          )
+                        ) : (
+                          <span className="text-neutral-300">-</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-neutral-500">
                       {site.registration_limit ?? "-"}
