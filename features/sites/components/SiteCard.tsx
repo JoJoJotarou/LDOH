@@ -482,12 +482,6 @@ export function SiteCard({
                     site.name
                   )}
                 </h3>
-                {isReported && (
-                  <span className="inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0 text-[9px] font-semibold text-red-600 whitespace-nowrap">
-                    <Flag className="h-2.5 w-2.5" />
-                    待审核
-                  </span>
-                )}
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
@@ -999,12 +993,6 @@ export function SiteCard({
                       )}
                     </h3>
                   </div>
-                  {isReported && (
-                    <span className="inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0 text-[9px] font-semibold text-red-600 whitespace-nowrap shrink-0">
-                      <Flag className="h-2.5 w-2.5" />
-                      待审核
-                    </span>
-                  )}
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
                   <TooltipProvider delayDuration={0}>
