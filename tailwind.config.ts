@@ -1,4 +1,6 @@
-import type { Config } from "tailwindcss";
+import type {Config} from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
 const config: Config = {
     darkMode: ["class"],
@@ -9,71 +11,72 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-  	extend: {
-  		fontFamily: {
-  			sans: [
-  				'var(--font-inter)',
-  				'Inter',
-  				'sans-serif'
-  			]
-  		},
-  		colors: {
-  			brand: {
-  				bg: '#F0F0F0',
-  				border: '#E6E6E6',
-  				text: '#1C1C1E',
-  				muted: '#6B7280',
-  				blue: '#FFB103',
-  				green: '#059669'
-  			},
-  			background: 'hsl(var(--background))',
-  			foreground: 'hsl(var(--foreground))',
-  			card: {
-  				DEFAULT: 'hsl(var(--card))',
-  				foreground: 'hsl(var(--card-foreground))'
-  			},
-  			popover: {
-  				DEFAULT: 'hsl(var(--popover))',
-  				foreground: 'hsl(var(--popover-foreground))'
-  			},
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
-  			},
-  			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
-  			},
-  			muted: {
-  				DEFAULT: 'hsl(var(--muted))',
-  				foreground: 'hsl(var(--muted-foreground))'
-  			},
-  			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
-  			},
-  			destructive: {
-  				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
-  			},
-  			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
-  			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
-  			}
-  		},
-  		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
-  		}
-  	}
+      extend: {
+          fontFamily: {
+              sans: [
+                  'var(--font-inter)',
+                  'Inter',
+                  'sans-serif'
+              ]
+          },
+          colors: {
+              brand: {
+                  bg: 'hsl(var(--brand-bg))',
+                  border: 'hsl(var(--brand-border))',
+                  text: 'hsl(var(--brand-text))',
+                  muted: 'hsl(var(--brand-muted))',
+                  blue: 'hsl(var(--brand-blue))',
+                  green: 'hsl(var(--brand-green))'
+              },
+              background: 'hsl(var(--background))',
+              foreground: 'hsl(var(--foreground))',
+              card: {
+                  DEFAULT: 'hsl(var(--card))',
+                  foreground: 'hsl(var(--card-foreground))'
+              },
+              popover: {
+                  DEFAULT: 'hsl(var(--popover))',
+                  foreground: 'hsl(var(--popover-foreground))'
+              },
+              primary: {
+                  DEFAULT: 'hsl(var(--primary))',
+                  foreground: 'hsl(var(--primary-foreground))'
+              },
+              secondary: {
+                  DEFAULT: 'hsl(var(--secondary))',
+                  foreground: 'hsl(var(--secondary-foreground))'
+              },
+              muted: {
+                  DEFAULT: 'hsl(var(--muted))',
+                  foreground: 'hsl(var(--muted-foreground))'
+              },
+              accent: {
+                  DEFAULT: 'hsl(var(--accent))',
+                  foreground: 'hsl(var(--accent-foreground))'
+              },
+              destructive: {
+                  DEFAULT: 'hsl(var(--destructive))',
+                  foreground: 'hsl(var(--destructive-foreground))'
+              },
+              border: 'hsl(var(--border))',
+              input: 'hsl(var(--input))',
+              ring: 'hsl(var(--ring))',
+              chart: {
+                  '1': 'hsl(var(--chart-1))',
+                  '2': 'hsl(var(--chart-2))',
+                  '3': 'hsl(var(--chart-3))',
+                  '4': 'hsl(var(--chart-4))',
+                  '5': 'hsl(var(--chart-5))'
+              }
+          },
+          borderRadius: {
+              lg: 'var(--radius)',
+              md: 'calc(var(--radius) - 2px)',
+              sm: 'calc(var(--radius) - 4px)'
+          }
+      }
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+    plugins: [tailwindcssAnimate, typography],
 };
+
 export default config;

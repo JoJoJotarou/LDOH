@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { NotificationBanner } from "@/components/common/NotificationBanner";
+import type {Metadata} from "next";
+import {Inter} from "next/font/google";
+import {NotificationBanner} from "@/components/common/NotificationBanner";
+import {ThemeProvider} from "@/components/common/ThemeProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,12 +27,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+    <head>
+        <script
+            dangerouslySetInnerHTML={{
+                __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+            }}
+        />
+    </head>
       <body
         className={`${inter.variable} min-h-screen font-sans antialiased`}
         suppressHydrationWarning
       >
-        <NotificationBanner />
-        {children}
+      <ThemeProvider>
+          <NotificationBanner/>
+          {children}
+      </ThemeProvider>
       </body>
     </html>
   );

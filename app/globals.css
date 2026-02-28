@@ -29,7 +29,16 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* Brand colors - Light mode */
+    --brand-bg: 0 0% 100%;
+    --brand-border: 0 0% 89.8%;
+    --brand-text: 0 0% 3.9%;
+    --brand-muted: 0 0% 45.1%;
+    --brand-blue: 43 96% 56%;
+    --brand-green: 160 84% 39%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -55,10 +64,16 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Brand colors - Dark mode */
+    --brand-bg: 0 0% 3.9%;
+    --brand-border: 0 0% 14.9%;
+    --brand-text: 0 0% 98%;
+    --brand-muted: 0 0% 63.9%;
+    --brand-blue: 43 96% 56%;
+    --brand-green: 153 59% 49%;
   }
 }
-
-
 
 @layer base {
   * {

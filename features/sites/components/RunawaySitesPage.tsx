@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {useEffect, useMemo, useState} from "react";
 import useSWR from "swr";
-import { Background } from "@/components/common/Background";
-import { Navigation } from "@/components/common/Navigation";
-import { Site } from "@/lib/contracts/types/site";
-import { Button } from "@/components/ui/button";
-import { SiteCard } from "@/features/sites/components/SiteCard";
-import { Loader2, RotateCcw } from "lucide-react";
+import {Background} from "@/components/common/Background";
+import {Navigation} from "@/components/common/Navigation";
+import {Site} from "@/lib/contracts/types/site";
+import {Button} from "@/components/ui/button";
+import {SiteCard} from "@/features/sites/components/SiteCard";
+import {Loader2, RotateCcw} from "lucide-react";
 
 type LdUser = {
   id: number;
@@ -97,7 +97,8 @@ export function RunawaySitesPage() {
 
         <div className="mt-8">
         {isLoading ? (
-          <div className="rounded-xl border border-brand-border bg-white p-6 text-sm text-brand-muted">
+            <div
+                className="rounded-xl border border-brand-border bg-white p-6 text-sm text-brand-muted dark:bg-card dark:border-border">
             加载中...
           </div>
         ) : sites.length === 0 ? (
@@ -121,7 +122,7 @@ export function RunawaySitesPage() {
                       onClick={() => handleRestore(site)}
                       disabled={isRestoring}
                       title="恢复我的站点"
-                      className="absolute right-6 top-6 z-20 h-8 w-8 rounded-full border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 hover:text-red-700"
+                      className="absolute right-6 top-6 z-20 h-8 w-8 rounded-full border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 hover:text-red-700 dark:bg-card dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950"
                     >
                       {isRestoring ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
