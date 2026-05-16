@@ -1,4 +1,3 @@
-import { lookup } from "dns/promises";
 import net from "net";
 
 export type HealthStatus = "up" | "slow" | "down";
@@ -63,7 +62,7 @@ function isPrivateIp(address: string): boolean {
   return true;
 }
 
-async function validateUrl(url: URL) {
+function validateUrl(url: URL) {
   if (url.protocol !== "https:") {
     return { ok: false, error: "invalid_protocol" };
   }
@@ -72,16 +71,8 @@ async function validateUrl(url: URL) {
     return { ok: false, error: "blocked_localhost" };
   }
 
-  try {
-    const records = await lookup(hostname, { all: true });
-    if (!records.length) {
-      return { ok: false, error: "dns_lookup_failed" };
-    }
-    if (records.some((record) => isPrivateIp(record.address))) {
-      return { ok: false, error: "blocked_private_ip" };
-    }
-  } catch {
-    return { ok: false, error: "dns_lookup_failed" };
+  if (net.isIP(hostname) && isPrivateIp(hostname)) {
+    return { ok: false, error: "blocked_private_ip" };
   }
 
   return { ok: true };
@@ -128,7 +119,7 @@ export async function checkSiteHealth(
     };
   }
 
-  const initialValidation = await validateUrl(currentUrl);
+  const initialValidation = validateUrl(currentUrl);
   if (!initialValidation.ok) {
     return {
       status: "down",
@@ -183,7 +174,7 @@ export async function checkSiteHealth(
         };
       }
       const nextUrl = new URL(location, currentUrl);
-      const redirectValidation = await validateUrl(nextUrl);
+      const redirectValidation = validateUrl(nextUrl);
       if (!redirectValidation.ok) {
         const redirectError =
           redirectValidation.error === "invalid_protocol"

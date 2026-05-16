@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // 可按需改名；如果你的 Cloudflare 账号里已存在同名 Worker，请改成自己的唯一名称。
+  "name": "ldoh",
+  // 保留 Dashboard 中手工维护的 Variables，避免下次 deploy 被本地配置覆盖。
+  "keep_vars": true,
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-03-24",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+
+  "limits": {
+    "cpu_ms": 50,
+    "sub_requests": 300,
+  },
+}

@@ -42,6 +42,22 @@ npm run build
 npm start
 ```
 
+Cloudflare Workers 构建 / 预览 / 部署：
+
+```bash
+npm run build:worker
+npm run preview:worker
+npm run deploy:worker
+```
+
+说明：
+
+- `build:worker` 会调用 OpenNext，把 Next.js 项目构建成 Cloudflare Workers 可运行产物
+- 构建产物位于 `.open-next/worker.js` 与 `.open-next/assets`
+- `preview:worker` 会先构建，再用 OpenNext 调起 Wrangler 本地预览生产产物
+- `deploy:worker` 会先构建，再把 Worker 发布到 Cloudflare
+- 这三个脚本直接走 Next.js / OpenNext 的标准环境变量加载逻辑；生产构建请使用仓库根目录的 `.env.production.local`
+
 ## 环境变量
 
 必须：
@@ -58,7 +74,7 @@ SESSION_SECRET=
 可选：
 
 ```
-ENV=dev                           # dev 模式，跳过 OAuth，返回 mock 用户
+ENV=dev                           # 业务 dev 模式，跳过 OAuth，返回 mock 用户
 LD_DEV_USERNAME=                  # dev 模式 mock 用户名（ENV=dev 必填）
 LD_DEV_TRUST_LEVEL=               # dev 模式 mock trust_level（ENV=dev 必填）
 LD_DEV_USER_ID=                   # dev 模式 mock user_id（ENV=dev 必填，>0 才写入 created_by）
@@ -76,6 +92,77 @@ NEXT_PUBLIC_SWR_FOCUS_THROTTLE_INTERVAL=300000 # SWR 聚焦刷新节流（ms）
 NEXT_PUBLIC_SWR_REFRESH_INTERVAL=1800000       # SWR 自动刷新间隔（ms）
 NEXT_PUBLIC_REPO_URL=                          # 导航栏 GitHub 按钮链接
 ```
+
+### Cloudflare 环境变量建议
+
+- 构建期变量继续放在 `.env.production.local`，供本地 `next build` / OpenNext 打包使用。
+- 运行期敏感变量建议通过 `wrangler secret put <NAME>` 或 Cloudflare Dashboard Secrets 配置：
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `LD_OAUTH_CLIENT_SECRET`
+  - `SESSION_SECRET`
+  - `HEALTH_CRON_SECRET`
+- 运行期非敏感变量建议放在 Cloudflare Dashboard Variables；仓库中的 `wrangler.jsonc` 已开启 `keep_vars: true`，后续 deploy 不会覆盖你在 Dashboard 中手工修改的变量。建议放入的变量包括：
+  - `SUPABASE_URL`
+  - `LD_OAUTH_CLIENT_ID`
+  - `LD_OAUTH_REDIRECT_URI`
+  - `LD_OAUTH_AUTHORIZATION_ENDPOINT`
+  - `LD_OAUTH_TOKEN_ENDPOINT`
+  - `LD_OAUTH_USER_ENDPOINT`
+  - `LD_OAUTH_REFRESH_BUFFER_SECONDS`
+  - `LD_OAUTH_TOKEN_COOKIE_MAX_AGE`
+  - `HEALTH_CHECK_TIMEOUT_MS`
+  - `HEALTH_CHECK_SLOW_MS`
+  - `HEALTH_CHECK_INTERVAL_MINUTES`
+  - `HEALTH_CHECK_CONCURRENCY`
+  - `NEXT_PUBLIC_SWR_FOCUS_THROTTLE_INTERVAL`
+  - `NEXT_PUBLIC_SWR_REFRESH_INTERVAL`
+  - `NEXT_PUBLIC_REPO_URL`
+
+## 部署到 Cloudflare Workers
+
+仓库已内置 OpenNext 与 Wrangler 配置文件：
+
+- `open-next.config.ts`
+- `wrangler.jsonc`
+
+首次部署前：
+
+1. 确认 `wrangler.jsonc` 里的 `name` 是你自己的唯一 Worker 名称
+2. 用 `.env.production.local` 准备构建期变量
+3. 在 Cloudflare Dashboard 中配置运行期 Variables 与 Secrets
+4. 在已登录 Wrangler 的环境中执行部署命令
+
+常用命令：
+
+```bash
+# 仅生成 Cloudflare 产物
+npm run build:worker
+
+# 本地预览 Cloudflare 生产产物
+npm run preview:worker
+
+# 部署到 Cloudflare
+npm run deploy:worker
+```
+
+当前 `open-next.config.ts` 使用默认 dummy 缓存，不要求额外的 KV / R2 / D1 绑定。如果后续要接入 ISR 或更激进的缓存策略，再补 Cloudflare 存储绑定即可。
+
+### 构建时与运行时环境变量说明
+
+`npm run deploy:worker` 的构建发生在本地机器上，因此要区分“构建时变量”和“Cloudflare 运行时变量”：
+
+- 构建时变量：影响 `next build` / OpenNext 打包过程。比如静态预渲染、`NEXT_PUBLIC_*`、构建期读取的服务端变量。
+- 运行时变量：Worker 已部署到 Cloudflare 后，在请求处理阶段通过 Cloudflare Variables / Secrets 读取。
+
+为避免本地开发的 `.env.local` 误参与生产打包，生产构建请把变量直接写进 `.env.production.local`，并尽量写完整，不要依赖 `.env.local` 补值。业务代码里的 `ENV` 是项目自己的 dev/mock 开关，和 Next.js / OpenNext 的生产构建模式不是一回事。
+
+推荐做法：
+
+- `.env.production.local`：只负责构建期变量
+- Cloudflare Dashboard Variables：只负责运行期非敏感变量
+- Cloudflare Dashboard Secrets：只负责运行期敏感变量
+
+不建议把敏感变量写进 `wrangler.jsonc` 的 `vars`，即使先留空也不建议。敏感值应直接在 Cloudflare 的 Secrets 中维护。
 
 ## 项目结构（简化）
 
@@ -152,3 +239,5 @@ lib/contracts/           # 类型定义
 
 - `HEALTH_CRON_SECRET`：与环境变量一致的密钥
 - `HEALTH_CRON_URL`：例如 `https://your-domain.com/api/health/cron`
+
+部署到 Cloudflare 后，这个健康检查接口仍然可以继续沿用“外部 HTTP 定时调用”的方式；如果你已经有 GitHub Actions，就不必额外改成 Cloudflare Cron Trigger。
