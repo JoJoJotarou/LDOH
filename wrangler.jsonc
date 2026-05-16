@@ -13,9 +13,4 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
-
-  "limits": {
-    "cpu_ms": 50,
-    "sub_requests": 300,
-  },
 }

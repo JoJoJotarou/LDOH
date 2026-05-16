@@ -293,6 +293,8 @@
 | reporter_username | text        | 否   | ''                | 报告人用户名                     |
 | report_type       | text        | 否   | fake_charity      | 报告类型（runaway/fake_charity） |
 | reason            | text        | 否   | ''                | 报告原因                         |
+| evidence_url      | text        | 否   | ''                | 证据URL（截图图片链接或站长公告链接） |
+| evidence_type     | text        | 否   | ''                | 证据类型（screenshot/announcement_link） |
 | status            | text        | 否   | pending           | 报告状态                         |
 | created_at        | timestamptz | 否   | now()             | 创建时间                         |
 | reviewed_at       | timestamptz | 是   | -                 | 审核时间                         |
@@ -315,6 +317,7 @@
 | site_reports_site_id_fkey      | site_id     | FOREIGN KEY | 关联 site(id) 并级联删除          |
 | site_reports_report_type_check | report_type | CHECK       | 仅允许 runaway/fake_charity       |
 | site_reports_status_check      | status      | CHECK       | 仅允许 pending/reviewed/dismissed |
+| site_reports_evidence_type_check | evidence_type | CHECK   | 仅允许 screenshot/announcement_link/空 |
 
 ## 表：system_settings
 

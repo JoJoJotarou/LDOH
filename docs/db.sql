@@ -137,6 +137,8 @@ CREATE TABLE IF NOT EXISTS public.site_reports (
   reporter_username text NOT NULL DEFAULT '',
   report_type text NOT NULL DEFAULT 'fake_charity',
   reason text NOT NULL DEFAULT '',
+  evidence_url text NOT NULL DEFAULT '',
+  evidence_type text NOT NULL DEFAULT '',
   status text NOT NULL DEFAULT 'pending',
   created_at timestamptz NOT NULL DEFAULT now(),
   reviewed_at timestamptz,
@@ -146,7 +148,9 @@ CREATE TABLE IF NOT EXISTS public.site_reports (
   CONSTRAINT site_reports_report_type_check
     CHECK (report_type IN ('runaway', 'fake_charity')),
   CONSTRAINT site_reports_status_check
-    CHECK (status IN ('pending', 'reviewed', 'dismissed'))
+    CHECK (status IN ('pending', 'reviewed', 'dismissed')),
+  CONSTRAINT site_reports_evidence_type_check
+    CHECK (evidence_type IN ('', 'screenshot', 'announcement_link'))
 );
 
 CREATE TABLE IF NOT EXISTS public.system_settings (
@@ -169,6 +173,10 @@ WHERE report_type IS NULL;
 ALTER TABLE public.site_reports
   ALTER COLUMN report_type SET DEFAULT 'fake_charity',
   ALTER COLUMN report_type SET NOT NULL;
+
+ALTER TABLE public.site_reports
+  ADD COLUMN IF NOT EXISTS evidence_url text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS evidence_type text NOT NULL DEFAULT '';
 
 DO $$
 BEGIN
@@ -300,6 +308,8 @@ COMMENT ON COLUMN public.site_reports.reporter_id IS '报告人用户ID';
 COMMENT ON COLUMN public.site_reports.reporter_username IS '报告人用户名';
 COMMENT ON COLUMN public.site_reports.report_type IS '报告类型（runaway/fake_charity）';
 COMMENT ON COLUMN public.site_reports.reason IS '报告原因';
+COMMENT ON COLUMN public.site_reports.evidence_url IS '证据URL（截图图片链接或站长公告链接）';
+COMMENT ON COLUMN public.site_reports.evidence_type IS '证据类型（screenshot/announcement_link）';
 COMMENT ON COLUMN public.site_reports.status IS '报告状态';
 COMMENT ON COLUMN public.site_reports.created_at IS '创建时间';
 COMMENT ON COLUMN public.site_reports.reviewed_at IS '审核时间';

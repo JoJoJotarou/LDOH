@@ -8,6 +8,7 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  ExternalLink,
 } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -28,6 +29,8 @@ type ReportRow = {
   reporter_username: string;
   report_type: "runaway" | "fake_charity";
   reason: string;
+  evidence_url: string;
+  evidence_type: "screenshot" | "announcement_link" | "";
   status: string;
   created_at: string;
   reviewed_at: string | null;
@@ -149,6 +152,7 @@ export default function AdminReportsPage() {
               <th className="px-4 py-3 font-medium">报告人</th>
               <th className="px-4 py-3 font-medium">类型</th>
               <th className="px-4 py-3 font-medium">报告原因</th>
+              <th className="px-4 py-3 font-medium">证据</th>
               <th className="px-4 py-3 font-medium">报告时间</th>
               <th className="px-4 py-3 font-medium">状态</th>
               <th className="px-4 py-3 font-medium">操作</th>
@@ -158,7 +162,7 @@ export default function AdminReportsPage() {
             {isLoading ? (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={10}
                   className="px-4 py-8 text-center text-neutral-400"
                 >
                   加载中...
@@ -167,7 +171,7 @@ export default function AdminReportsPage() {
             ) : !data?.items?.length ? (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={10}
                   className="px-4 py-8 text-center text-neutral-400"
                 >
                   暂无数据
@@ -240,6 +244,20 @@ export default function AdminReportsPage() {
                     </td>
                     <td className="max-w-[300px] truncate px-4 py-3 text-neutral-500">
                       {report.reason}
+                    </td>
+                    <td className="px-4 py-3">
+                      {report.evidence_url ? (
+                        <a
+                          href={report.evidence_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                        >
+                          查看证据 <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-neutral-300">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs text-neutral-400">
                       {report.created_at

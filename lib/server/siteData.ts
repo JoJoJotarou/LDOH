@@ -67,6 +67,8 @@ type SupabaseReport = {
   site_id: string;
   report_type: string;
   reason: string | null;
+  evidence_url: string | null;
+  evidence_type: string | null;
   reporter_username: string | null;
   created_at: string | null;
 };
@@ -169,7 +171,7 @@ async function loadSitesFromSupabase(options?: {
         .in("site_id", siteIds),
       supabaseAdmin
         .from("site_reports")
-        .select("site_id,report_type,reason,reporter_username,created_at")
+        .select("site_id,report_type,reason,evidence_url,evidence_type,reporter_username,created_at")
         .in("site_id", siteIds)
         .eq("status", "pending"),
     ]);
@@ -268,6 +270,8 @@ async function loadSitesFromSupabase(options?: {
     pendingReportBySite.set(report.site_id, {
       reportType: report.report_type,
       reason: report.reason ?? "",
+      evidenceUrl: report.evidence_url ?? undefined,
+      evidenceType: (report.evidence_type as "screenshot" | "announcement_link" | undefined) ?? undefined,
       reporterUsername: report.reporter_username ?? undefined,
       createdAt: report.created_at ?? undefined,
     });

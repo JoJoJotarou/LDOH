@@ -40,10 +40,13 @@ export interface SiteHealth {
 }
 
 export type SitePendingReportType = "runaway" | "fake_charity";
+export type EvidenceType = "screenshot" | "announcement_link";
 
 export interface SitePendingReport {
   reportType: SitePendingReportType;
   reason: string;
+  evidenceUrl?: string;
+  evidenceType?: EvidenceType;
   reporterUsername?: string;
   createdAt?: string;
 }
